@@ -1,110 +1,70 @@
 #include <iostream>
 #include <vector>
-#include <complex>
-#include <cmath>
-#include <ctime>
-#include <sys/time.h>
-#include "../include/Cooley-Tukey-parallel.hpp"
-#include "../include/Cooley-Tukey.hpp"
-#include "../include/MPIHelper.h"
-#include "../include/VectorInitializer.h"
+#include <memory>
+#include "transform.h"
+#include "fft_transform.h"
+#include "dwt_transform.h"
+#include "signal_utils.h"
 
-using namespace std;
+// Function to print complex signal
+void printSignal(const Signal& signal, const std::string& label) {
+    std::cout << label << std::endl;
+    for (size_t i = 0; i < std::min(signal.size(), size_t(10)); ++i) {
+        std::cout << i << ": " << signal[i].real() << " + " << signal[i].imag() << "i" << std::endl;
+    }
+    if (signal.size() > 10) {
+        std::cout << "... (" << signal.size() - 10 << " more values)" << std::endl;
+    }
+    std::cout << std::endl;
+}
 
-// config of constants for VectorInitializer
-constexpr int DATA_SIZE = 1 << 17;  // 2^17
-constexpr unsigned int RANDOM_SEED = 95;
+// Function to demonstrate a transform
+void demonstrateTransform(TransformBase& transform, const Signal& signal) {
+    std::cout << "===== " << transform.getName() << " =====" << std::endl;
 
+    try {
+        if (!transform.canProcess(signal)) {
+            std::cout << "Signal can't be processed by this transform. Padding to power of two..." << std::endl;
+            Signal padded = SignalUtils::padToPowerOfTwo(signal);
 
-int main(int argc, char** argv){
-    MPIHelper::instance(argc, argv);
+            Signal result = transform.forward(padded);
+            printSignal(result, "Transform Result:");
 
-    // Timing variables
-    struct timeval t1, t2;
-    double etimePar,etimeSeq;
+            Signal reconstructed = transform.inverse(result);
+            printSignal(reconstructed, "Reconstructed Signal:");
+        } else {
+            Signal result = transform.forward(signal);
+            printSignal(result, "Transform Result:");
 
-    //Initialize solvers
-    ParallelIterativeFFT ParallelFFTSolver = ParallelIterativeFFT();
-    SequentialFFT SequentialFFTSolver = SequentialFFT();
-
-    /* //creating a random input vector
-    srand(95);
-    std::vector<std::complex<double>>input_vector;
-    for(int i=0; i<N; i++)
-    {
-       input_vector.push_back(std::complex<double>(rand() % RAND_MAX, rand() % RAND_MAX));
-    }*/
-
-    // Generate input data using the separate initializer
-    std::vector<std::complex<double>> input_vector =
-            VectorInitializer::createRandomVector(DATA_SIZE, RANDOM_SEED);
-
-    // recursive FFT
-    std::vector<std::complex<double>> recursiveResult = SequentialFFTSolver.recursive_FFT(input_vector);
-
-    //exec and measure of SEQUENTIAL iterativeFFT
-    gettimeofday(&t1, NULL);
-    std::vector<std::complex<double>> iterativeResult = SequentialFFTSolver.iterative_FFT(input_vector);
-    gettimeofday(&t2, NULL);
-	// etimeSeq = std::abs(t2.tv_usec - t1.tv_usec);
-    etimeSeq = (t2.tv_sec - t1.tv_sec) * 1000000.0 + (t2.tv_usec - t1.tv_usec);  // considers seconds too now (x1000000 for seconds)
-    std::cout <<"Sequential version done, took ->  " << etimeSeq << " usec." << std::endl;
-
-    // exec and measure of PARALLEL iterativeFFT
-    gettimeofday(&t1, NULL);
-    std::vector<std::complex<double>> parallelResult = ParallelFFTSolver.findFFT(input_vector);
-	gettimeofday(&t2, NULL);
-    // etimePar = std::abs(t2.tv_usec - t1.tv_usec);
-    etimePar = (t2.tv_sec - t1.tv_sec) * 1000000.0 + (t2.tv_usec - t1.tv_usec);  // considers seconds too now (x1000000 for seconds)
-
-    std::cout <<"Parallel version done, took ->  " << etimePar << " usec." << std::endl;
-    // speedup
-    std::cout<<"The parallel version is "<< etimeSeq/etimePar <<" times faster. "<<std::endl; 
-
-    // exec and measure SEQUENTIAL INVERSE iterativeFFT
-    gettimeofday(&t1, NULL);
-    std::vector<std::complex<double>> iterativeInverseResult = SequentialFFTSolver.iterative_inverse_FFT(input_vector);
-	gettimeofday(&t2, NULL);
-    etimePar = std::abs(t2.tv_usec - t1.tv_usec);
-	std::cout <<"Inverse iterative version done, took ->  " << etimePar << " usec." << std::endl;
-    
-/*
-  double tolerance = 1e-9; // Define an acceptable tolerance
-    bool inverseCheck = true;
-    for (int i = 0; i < input_vector.size(); i++) {
-        if (std::abs(input_vector[i] - iterativeInverseResult[i]) > tolerance) {
-            cout << "Inverse Error at index: " << i 
-                << " | Original: " << input_vector[i]
-                << " | Inverse: " << iterativeInverseResult[i] << endl;
-            inverseCheck = false;
+            Signal reconstructed = transform.inverse(result);
+            printSignal(reconstructed, "Reconstructed Signal:");
         }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 
-    if (inverseCheck) {
-        cout << "Inverse FFT validation successful!" << endl;
-    } else {
-        cout << "Inverse FFT validation failed!" << endl;
-    }
+    std::cout << std::endl;
+}
 
-*/
-  
+int main() {
+    // Create a simple test signal (a sine wave with 8 samples)
+    std::vector<double> real_signal_data = {0.0, 0.7071, 1.0, 0.7071, 0.0, -0.7071, -1.0, -0.7071};
 
+    // Convert to complex for our transforms
+    Signal signal = SignalUtils::realToComplex(real_signal_data);
 
-    //Checking if the 3 implementations give the same results 
-    std::cout << "\nChecking results... " << std::endl;
-    bool check = true;
-    for(int i = 0; i < recursiveResult.size(); i++){
-        if(recursiveResult[i]!=iterativeResult[i] && iterativeResult[i]!=parallelResult[i])
-        {
-            std::cout <<"Different result in line " << i << std::endl;
-            check=false;
-        }
-    }
+    // Print original signal
+    printSignal(signal, "Original Signal:");
 
-    if(check)
-        std::cout <<"Same result for the 3 methods" << std::endl;
-    else
-        std::cout << "error 02394" << std::endl;
+    // Configure and demonstrate FFT
+    FFTTransform::Config fft_config;
+    fft_config.normalize_output = true;
+    FFTTransform fft_transform(fft_config);
+    demonstrateTransform(fft_transform, signal);
+
+    // Configure and demonstrate DWT
+    DWTTransform dwt_transform(DWTTransform::HAAR);
+    demonstrateTransform(dwt_transform, signal);
 
     return 0;
 }
