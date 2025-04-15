@@ -8,11 +8,25 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Add the executable
-add_executable(FFTProject
+add_executable(FFTMain
         FFT/src/fft_transform.cpp
         FFT/src/dwt_transform.cpp
         FFT/src/signal_utils.cpp
         FFT/src/main.cpp
+        FFT/src/signal_visualizer.cpp
+        FFT/src/optimized_fft.cpp
+        FFT/src/signal_generator.cpp
+)
+
+# Add the executable
+add_executable(FFTVisualizationDemo
+        FFT/src/fft_transform.cpp
+        FFT/src/dwt_transform.cpp
+        FFT/src/signal_utils.cpp
+        FFT/src/signal_visualizer.cpp
+        FFT/src/optimized_fft.cpp
+        FFT/src/signal_generator.cpp
+        FFT/src/visualization_demo.cpp
 )
 
 # Include directories
