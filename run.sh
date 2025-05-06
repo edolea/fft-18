@@ -13,4 +13,4 @@ cd build
 make
 
 # Run the resulting executable
-./FFTProject
+./FFTMain
