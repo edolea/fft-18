@@ -1,5 +1,5 @@
-#ifndef FFT_RECURSIVE_FOURIER_
-#define FFT_RECURSIVE_FOURIER_
+#ifndef FFT_RECURSIVE_FOURIER_HPP
+#define FFT_RECURSIVE_FOURIER_HPP
 
 // #include "fourier_transform_1d.hpp"
 #include "abstract_transform.hpp"
@@ -59,4 +59,4 @@ private:
     }
 };
 
-#endif //FFT_RECURSIVE_FOURIER_
+#endif //FFT_RECURSIVE_FOURIER_HPP
