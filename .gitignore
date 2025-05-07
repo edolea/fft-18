@@ -31,5 +31,9 @@
 *.out
 *.app
 
+# other
+*.xml
+*.name
+
 # build directories
 build/
