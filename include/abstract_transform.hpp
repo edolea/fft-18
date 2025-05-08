@@ -20,6 +20,9 @@ concept ComplexVector = ComplexVectorPre<T> && requires(const T& vec){
                                                                   // but left to double check at compile time if isPowerOfTwo is callable
 };
 
+using complexDouble = std::complex<double>;
+using doubleVector = std::vector<complexDouble>;
+
 
 // template specialization needed to check input
 template <ComplexVector T>

@@ -1,11 +1,7 @@
 #ifndef FFT_RECURSIVE_FOURIER_HPP
 #define FFT_RECURSIVE_FOURIER_HPP
 
-// #include "fourier_transform_1d.hpp"
 #include "abstract_transform.hpp"
-
-using complexDouble = std::complex<double>;
-using doubleVector = std::vector<complexDouble>;
 
 template <typename T>
 class RecursiveFft : public BaseTransform<T>{
@@ -24,7 +20,6 @@ public:
     ~RecursiveFft() override = default;
 
 private:
-
     doubleVector computation(const T& x) {
         if(x.size() == 1){
             return x;
