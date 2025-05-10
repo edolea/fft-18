@@ -11,7 +11,7 @@
 class RandomVectorGenerator {
 public:
     // Generate a random vector of complex numbers with a size that is a power of two
-    template <typename T>
+    template <ComplexVector T>
     static T generate(size_t size) {
         // Check if size is a power of two
         if (!isPowerOfTwo(size)) {

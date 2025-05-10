@@ -6,7 +6,7 @@
 #include <ostream>
 #include <type_traits>
 
-template <typename T>
+template <typename T = std::vector<std::complex<double>> >
 concept ComplexVectorPre = std::is_same_v<T, std::vector<std::complex<float>>> ||
                         std::is_same_v<T, std::vector<std::complex<double>>>;
 
@@ -55,5 +55,15 @@ public:
 
     virtual ~BaseTransform() = default;
 };
+
+
+/* PER EDO: template partial specialization
+
+    template<ComplexVector T>
+    class BaseTransform<T*>{
+
+    };
+
+ */
 
 #endif //FFT_ABSTRACT_TRANSFORM_HPP
