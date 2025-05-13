@@ -37,4 +37,4 @@
 
 # build directories
 build/
-CUDA_FFT
+CUDA_FFT/
