@@ -13,8 +13,9 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+
 #define THREAD_PER_BLOCK 1024 // this could be changed depends on GPU
-using namespace std;
+
 
 std::vector<std::complex<double>> cuda_library_fft(const std::vector<std::complex<double>> &input)
 {
