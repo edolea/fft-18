@@ -4,7 +4,6 @@
 #include <vector>
 #include <complex>
 #include <random>
-#include <cstddef> // for size_t
 #include <stdexcept>
 #include "abstract_transform.hpp" // To ensure it aligns with the ComplexVector concept
 
@@ -19,16 +18,28 @@ public:
         }
 
         // Random number generators for real and imaginary parts
-        std::random_device rd;
-        std::mt19937 gen(rd());
+        // std::random_device rd;
+        // std::mt19937 gen(rd());
+        std::mt19937 gen(42);  // fixed seed for testing --> all input equal
         std::uniform_real_distribution<> dis(-1.0, 1.0); // Range [-1.0, 1.0]
 
         T randomVector(size);
         for (auto& elem : randomVector) {
-            elem = std::complex<typename T::value_type::value_type>(dis(gen), dis(gen));
+            elem = std::complex<typename T::value_type::value_type>(dis(gen), dis(gen)); // T::value::value impone double
         }
 
         return randomVector;
+    }
+
+    template <ComplexVector T>
+    static T generate(int dim, double frequency, double amplitude) {
+        T input;
+        for (int i = 0; i < dim; ++i)
+        {
+            double value = amplitude * sin(2.0 * M_PI * frequency * i / dim);
+            input.emplace_back(std::complex<typename T::value_type::value_type>(value, 0.0)); // Only real part
+        }
+        return input;
     }
 };
 
