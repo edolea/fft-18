@@ -1,5 +1,3 @@
-#include <vector>
-#include <complex>
 #include <iostream>
 #include "vector_generator.hpp"
 #include "recursive_fourier.hpp"
@@ -12,18 +10,27 @@ void vector_print(const doubleVector& result);
 // using doubleVector = std::vector<std::complex<double>>;
 
 int main(){
-    const doubleVector vec = {{10, 2}, {5, 4} };
-    const auto vec2 = RandomVectorGenerator::generate<doubleVector>(8);
+    const auto vec = RandomVectorGenerator::generate<doubleVector>(8);
 
     // RecursiveFft<doubleVector> fft(vec2);
-    IterativeFourier<doubleVector> iterativeFourier(vec2);
-    RecursiveFft fft(vec2);
-    fft.compute();
+    IterativeFourier<doubleVector> iterativeFourier(vec);
+    //RecursiveFft fft(vec2);
+    //fft.compute();
     iterativeFourier.compute();
 
+    // Use polymorphism to call the desired transform
+    std::unique_ptr<BaseTransform<doubleVector >> fft;
+
+    // Assign RecursiveFft or IterativeFft
+    fft = std::make_unique<RecursiveFourier<doubleVector>>(vec);
+    fft->compute();
+    ComplexVector auto result = fft->getOutput();
+
+    fft = std::make_unique<IterativeFourier<doubleVector>>(vec);
+    fft->compute();
+    ComplexVector auto result_iter = fft->getOutput();
     // here ComplexVector is redundant, but still a nice double check for output type
-    ComplexVector auto result = fft.getOutput();
-    ComplexVector auto result_iter = iterativeFourier.getOutput();
+
 
     std::cout << "result recursive" << std::endl;
     vector_print(result);

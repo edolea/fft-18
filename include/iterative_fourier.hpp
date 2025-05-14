@@ -23,33 +23,27 @@ private:
     T computation(const T& input) const {
         int n = input.size();
         int m = static_cast<int>(log2(n));
-        doubleVector y(n); // Must a power of 2
+        T y(n); // Must a power of 2
 
         // Bit-reversal permutation
-        for (int i = 0; i < n; i++)
-        {
+        for (int i = 0; i < n; i++) {
             int j = 0;
             for (int k = 0; k < m; k++)
-            {
                 if (i & (1 << k))
-                {
                     j |= (1 << (m - 1 - k));
-                }
-            }
             y[j] = input[i];
         }
         // Iterative FFT
         for (int j = 1; j <= m; j++)
         {
             int d = 1 << j;
-            complexDouble w{1, 0};
-            complexDouble wd{std::cos(2 * M_PI / d), std::sin(2 * M_PI / d)};
-            for (int k = 0; k < d / 2; k++)
-            {
-                for (int m = k; m < n; m += d)
-                {
-                    complexDouble t{w * y[m + d / 2]};
-                    complexDouble x{y[m]};
+            typename T::value_type w{1, 0};
+            typename T::value_type wd{std::cos(2 * M_PI / d), std::sin(2 * M_PI / d)};
+
+            for (int k = 0; k < d / 2; k++) {
+                for (int m = k; m < n; m += d) {
+                    typename T::value_type t{w * y[m + d / 2]};
+                    typename T::value_type x{y[m]};
                     y[m] = x + t;
                     y[m + d / 2] = x - t;
                 }
