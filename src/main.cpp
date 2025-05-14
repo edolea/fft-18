@@ -12,9 +12,9 @@ void vector_print(const doubleVector& result);
 int main(){
     const auto vec = RandomVectorGenerator::generate<doubleVector>(8);
 
-    // RecursiveFft<doubleVector> fft(vec2);
+    // RecursiveFft<doubleVector> fft(vec);
     IterativeFourier<doubleVector> iterativeFourier(vec);
-    //RecursiveFft fft(vec2);
+    //RecursiveFft fft(vec);
     //fft.compute();
     iterativeFourier.compute();
 
@@ -36,8 +36,6 @@ int main(){
     vector_print(result);
     std::cout << "\nresult iterative" << std::endl;
     vector_print(result_iter);
-
-
 }
 
 void vector_print(const doubleVector& result) {
