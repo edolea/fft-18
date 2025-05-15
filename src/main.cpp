@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 #include "vector_generator.hpp"
 #include "recursive_fourier.hpp"
 #include "iterative_fourier.hpp"
@@ -36,6 +37,8 @@ int main(){
     vector_print(result);
     std::cout << "\nresult iterative" << std::endl;
     vector_print(result_iter);
+
+    // std::cout << '\n' << std::thread::hardware_concurrency() << '\n';
 }
 
 void vector_print(const doubleVector& result) {

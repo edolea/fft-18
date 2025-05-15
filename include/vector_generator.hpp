@@ -5,6 +5,7 @@
 #include <complex>
 #include <random>
 #include <stdexcept>
+#include <cassert>
 #include "abstract_transform.hpp" // To ensure it aligns with the ComplexVector concept
 
 class RandomVectorGenerator {
@@ -13,14 +14,14 @@ public:
     template <ComplexVector T>
     static T generate(size_t size) {
         // Check if size is a power of two
-        if (!isPowerOfTwo(size)) {
-            throw std::invalid_argument("Size must be a power of 2.");
-        }
+        //if (!isPowerOfTwo(size))
+          //  throw std::invalid_argument("Size must be a power of 2.");
+        assert(isPowerOfTwo(size));
 
         // Random number generators for real and imaginary parts
         // std::random_device rd;
         // std::mt19937 gen(rd());
-        std::mt19937 gen(42);  // fixed seed for testing --> all input equal
+        std::mt19937 gen(42);  // fixed seed for testing --> all same size inputs are equal
         std::uniform_real_distribution<> dis(-1.0, 1.0); // Range [-1.0, 1.0]
 
         T randomVector(size);
