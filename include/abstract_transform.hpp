@@ -5,6 +5,7 @@
 #include <complex>
 #include <ostream>
 #include <type_traits>
+#include <concepts>
 
 template <typename T = std::vector<std::complex<double>> >
 concept ComplexVectorPre = std::is_same_v<T, std::vector<std::complex<float>>> ||
