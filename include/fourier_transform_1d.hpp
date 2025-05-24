@@ -10,9 +10,6 @@ class FourierTransform1D : BaseTransform<T>{
 public:
     explicit FourierTransform1D(const T& input) : BaseTransform<T>(input) {}
 
-    // todo: overload left for backward compatibility. Check if to remove at the very end
-    void compute(const T &input) override = 0;
-
     void compute() override = 0;
 
 private:

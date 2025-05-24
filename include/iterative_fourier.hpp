@@ -10,11 +10,6 @@ class IterativeFourier : public BaseTransform<T> {
 public:
     explicit IterativeFourier(const T& input) : BaseTransform<T>(input) {}
 
-    void compute(const T& input) override {
-        this->input = input;
-        this->output = computation(input);
-    }
-
     void compute() override {
         this->output = computation(this->input);
     }

@@ -23,6 +23,7 @@ concept ComplexVector = ComplexVectorPre<T> && requires(const T& vec){
 
 using complexDouble = std::complex<double>;
 using doubleVector = std::vector<complexDouble>;
+using doubleMatrix = std::vector<doubleVector>;
 using complexFloat = std::complex<float>;
 using floatVector = std::vector<complexFloat>;
 
@@ -33,7 +34,7 @@ class BaseTransform
 {
 protected:
     // TODO: remove default constructure and put input constant !!!
-    T input;
+    const T input;
     T output;
 
 public:
@@ -44,7 +45,6 @@ public:
     }
     BaseTransform() = default;
 
-    virtual void compute(const T& input) = 0;
     virtual void compute() = 0;
 
     T getOutput() const {

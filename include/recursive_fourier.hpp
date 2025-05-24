@@ -8,11 +8,6 @@ class RecursiveFourier : public BaseTransform<T> {
 public:
     explicit RecursiveFourier(const T &input) : BaseTransform<T>(input) {}
 
-    void compute(const T& input) override {
-        this->input = input;
-        this->output = computation(input);
-    }
-
     void compute() override {
         this->output = computation(this->input);
     }
@@ -55,11 +50,6 @@ template<typename T>
 class RecursiveTemplateFft : BaseTransform<T> {
 public:
     explicit RecursiveTemplateFft(const T &input) : BaseTransform<T>(input) {}
-
-    void compute(const T& input) override {
-        this->input = input;
-        this->output = computation(input);
-    }
 
     void compute() override {
         this->output = computation(this->input);
