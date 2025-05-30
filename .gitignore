@@ -37,3 +37,4 @@
 
 # build directories
 build/
+.idea

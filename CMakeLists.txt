@@ -7,18 +7,27 @@ project(fft)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_subdirectory(external/googletest)
+enable_testing()
+
+# Include directories
+include_directories(
+        include
+)
+
 # add executable
 add_executable(fft
         src/main.cpp
         src/fourier_transform.cpp
 )
 
-
-
-# Include directories
-include_directories(
-        include
+# testing
+add_executable(my_tests
+        test/fourier_testing.cpp
 )
+target_link_libraries(my_tests gtest_main)
+include(GoogleTest)
+gtest_discover_tests(my_tests)
 
 # include_directories(${MPI_INCLUDE_PATH})
 
