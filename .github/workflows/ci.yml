@@ -1,0 +1,32 @@
+name: C++ CI
+
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository with submodules
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive # Ensures submodules are initialized and updated
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: '3.27'
+
+      - name: Configure CMake
+        run: cmake -S . -B build
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run Main
+        run: ./build/fft
+
+      - name: Run Tests
+        run: ctest --test-dir build --output-on-failure
