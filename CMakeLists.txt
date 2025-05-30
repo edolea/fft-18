@@ -7,7 +7,19 @@ project(fft)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_subdirectory(external/googletest)
+# Add Google Test using FetchContent
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/03597a01ee50e33277bf1b6b3f637bbe1424cefd.zip
+)
+
+# add_subdirectory(external/googletest)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest)
+
 enable_testing()
 
 # Include directories
