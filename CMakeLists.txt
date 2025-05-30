@@ -11,7 +11,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 include(FetchContent)
 FetchContent_Declare(
         googletest
-        URL https://github.com/google/googletest/archive/03597a01ee50e33277bf1b6b3f637bbe1424cefd.zip
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        main
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 # add_subdirectory(external/googletest)
