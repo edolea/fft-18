@@ -43,6 +43,9 @@ using complexFloat = std::complex<float>;
 using floatVector = std::vector<complexFloat>;
 using floatMatrix = std::vector<floatVector>;
 
+// combined concept for both vectors and matrices
+template <typename T>
+concept ComplexContainer = ComplexVector<T> || ComplexMatrix<T>;
 
 // template specialization needed to check input
 template <ComplexVector T>

@@ -26,9 +26,9 @@ public:
 
         T randomVector(size);
         for (auto& elem : randomVector) {
-            // elem = std::complex<typename T::value_type::value_type>(dis(gen), dis(gen)); // T::value::value impone double
-            using ValueType = typename T::value_type::value_type;
-            elem = ValueType(dis(gen), dis(gen));
+             elem = std::complex<typename T::value_type::value_type>(dis(gen), dis(gen)); // T::value::value impone double
+            //using ValueType = typename T::value_type::value_type;
+            //elem = ValueType(dis(gen), dis(gen));
         }
 
         return randomVector;
