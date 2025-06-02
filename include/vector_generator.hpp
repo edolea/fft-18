@@ -9,7 +9,30 @@
 #include "abstract_transform.hpp" // To ensure it aligns with the ComplexVector concept
 
 class RandomVectorGenerator {
+    template<typename T>
+    static constexpr T simple_rand(T seed, size_t index) {
+        // Simple LCG: next = (a * current + c) % m
+        T value = seed;
+        for (size_t i = 0; i < index + 1; ++i)
+            value = std::fmod(1103515245 * value + 12345, static_cast<T>(1u << 31));
+
+        return value;
+    }
+
 public:
+    // TODO: failed try to make random generator at compile time --> must use array to have it
+    template<ComplexVector T>
+    static constexpr T make_random_vector(uint32_t seed, size_t size) {
+        assert(isPowerOfTwo(size));
+        T randomVector(size);
+
+        using ValueType = typename T::value_type::value_type;
+        for (size_t i = 0; i < size; ++i) {
+            randomVector[i] = std::complex<ValueType>(simple_rand<ValueType>(seed, i), 0);
+        }
+        return randomVector;
+    }
+
     // Generate a random vector of complex numbers with a size that is a power of two
     template <ComplexVector T>
     static T generate(size_t size) {
@@ -26,7 +49,7 @@ public:
 
         T randomVector(size);
         for (auto& elem : randomVector) {
-             elem = std::complex<typename T::value_type::value_type>(dis(gen), dis(gen)); // T::value::value impone double
+             elem = std::complex<typename T::value_type::value_type>(dis(gen), dis(gen)); // T::value::value impones double
             //using ValueType = typename T::value_type::value_type;
             //elem = ValueType(dis(gen), dis(gen));
         }

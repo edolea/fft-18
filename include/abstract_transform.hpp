@@ -48,7 +48,7 @@ template <typename T>
 concept ComplexContainer = ComplexVector<T> || ComplexMatrix<T>;
 
 // template specialization needed to check input
-template <ComplexVector T>
+template <ComplexContainer T>
 class BaseTransform {
 protected:
     // TODO: remove default constructure and put input constant !!!

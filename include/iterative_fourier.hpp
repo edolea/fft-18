@@ -4,7 +4,7 @@
 #include <abstract_transform.hpp>
 
 
-template <typename T> // why using typename or ComplexVector is the same?
+template <typename T>
 class IterativeFourier : public BaseTransform<T> {
 
 public:
