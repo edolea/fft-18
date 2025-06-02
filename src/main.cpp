@@ -6,39 +6,21 @@
 
 void vector_print(const doubleVector& result);
 
-// already in abstract, here to remember them
-// using floatVector = std::vector<std::complex<float>>;
-// using doubleVector = std::vector<std::complex<double>>;
-
 int main(){
     const auto vec = RandomVectorGenerator::generate<doubleVector>(8);
+    doubleVector output;
+    doubleVector output2;
 
-    // RecursiveFft<doubleVector> fft(vec);
-    IterativeFourier<doubleVector> iterativeFourier(vec);
-    //RecursiveFft fft(vec);
-    //fft.compute();
-    iterativeFourier.compute();
+    RecursiveFourier<doubleVector> recursiveFourier;
+    IterativeFourier<doubleVector> iterativeFourier;
 
-    // Use polymorphism to call the desired transform
-    std::unique_ptr<BaseTransform<doubleVector >> fft;
-
-    // Assign RecursiveFft or IterativeFft
-    fft = std::make_unique<RecursiveFourier<doubleVector>>(vec);
-    fft->compute();
-    ComplexVector auto result = fft->getOutput();
-
-    fft = std::make_unique<IterativeFourier<doubleVector>>(vec);
-    fft->compute();
-    ComplexVector auto result_iter = fft->getOutput();
-    // here ComplexVector is redundant, but still a nice double check for output type
-
+    recursiveFourier.compute(vec, output);
+    iterativeFourier.compute(vec, output2);
 
     std::cout << "result recursive" << std::endl;
-    vector_print(result);
+    vector_print(output);
     std::cout << "\nresult iterative" << std::endl;
-    vector_print(result_iter);
-
-    // std::cout << '\n' << std::thread::hardware_concurrency() << '\n';
+    vector_print(output2);
 }
 
 void vector_print(const doubleVector& result) {
