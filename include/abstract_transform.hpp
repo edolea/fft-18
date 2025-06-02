@@ -54,6 +54,7 @@ protected:
     // TODO: remove default constructure and put input constant !!!
     const T input;
     T output;
+    std::chrono::duration<double> time;
 
 public:
     explicit BaseTransform(const T& input) : input(input) {
