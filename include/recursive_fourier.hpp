@@ -40,6 +40,12 @@ private:
             return y;
         }
     }
+
+public:
+    void executionTime() const override{
+        std::cout << "Recursive FFT time: "
+                  << this->time.count() << " seconds" << std::endl;
+    }
 };
 
 

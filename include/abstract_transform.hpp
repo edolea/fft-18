@@ -85,8 +85,9 @@ public:
         time = end - start;
     }
 
-    [[nodiscard]] TimeDuration getExecutionTime() const {
-        return time;
+    virtual void executionTime() const{
+        std::cout << "FFT time: "
+                  << this->time.count() << " seconds" << std::endl;
     }
 
     virtual ~BaseTransform() = default;

@@ -71,10 +71,8 @@ TEST_F(FourierTransformTest, ComparePerformance) {
     recursiveFft.compute(input, recursive_output);
     iterativeFft.compute(input, iterative_output);
 
-    std::cout << "Recursive FFT time: "
-              << recursiveFft.getExecutionTime().count() << " seconds" << std::endl;
-    std::cout << "Iterative FFT time: "
-              << iterativeFft.getExecutionTime().count() << " seconds" << std::endl;
+    recursiveFft.executionTime();
+    iterativeFft.executionTime();
 
     EXPECT_TRUE(areEqual(recursive_output, iterative_output));
 }

@@ -37,6 +37,13 @@ private:
             }
         }
         output = std::move(y);
+
+    }
+
+public:
+    void executionTime() const override {
+        std::cout << "Iterative FFT time: "
+                  << this->time.count() << " seconds" << std::endl;
     }
 };
 

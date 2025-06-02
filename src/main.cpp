@@ -21,6 +21,9 @@ int main(){
     vector_print(output);
     std::cout << "\nresult iterative" << std::endl;
     vector_print(output2);
+
+    recursiveFourier.executionTime();
+    iterativeFourier.executionTime();
 }
 
 void vector_print(const doubleVector& result) {
