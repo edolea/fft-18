@@ -69,7 +69,7 @@ concept ComplexArrayContainer = ComplexArray<T, n> || ComplexArrayMatrix<T, n>;
 template <ComplexContainer T>
 class BaseTransform {
 protected:
-    TimeDuration time;
+    std::chrono::duration<double> time{};
 
     // private virtual interface
     virtual void computeImpl(const T& input, T& output) = 0;
