@@ -13,56 +13,8 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-
 #define THREAD_PER_BLOCK 1024 // this could be changed depends on GPU
-
-
-std::vector<std::complex<double>> cuda_library_fft(const std::vector<std::complex<double>> &input)
-{
-    const int N = input.size(); // Assuming N is the size of the input vector
-
-    auto START_CUDA_FFT = std::chrono::high_resolution_clock::now();
-
-    cuDoubleComplex *d_input;
-    cudaMalloc((void **)&d_input, sizeof(cuDoubleComplex) * N);
-
-    std::vector<cuDoubleComplex> device_input(N);
-    for (int i = 0; i < N; ++i)
-    {
-        device_input[i].x = input[i].real();
-        device_input[i].y = input[i].imag();
-    }
-    cudaMemcpy(d_input, device_input.data(), sizeof(cuDoubleComplex) * N, cudaMemcpyHostToDevice);
-
-    auto CUDA_MALLOC_COMPLETE = std::chrono::high_resolution_clock::now();
-
-    cufftHandle plan;
-    cufftPlan1d(&plan, N, CUFFT_Z2Z, 1);
-    cufftExecZ2Z(plan, d_input, d_input, CUFFT_FORWARD);
-
-    cudaMemcpy(device_input.data(), d_input, sizeof(cuDoubleComplex) * N, cudaMemcpyDeviceToHost);
-    cudaDeviceSynchronize();
-
-    auto END_CUDA_FFT = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration_cuda_fft = END_CUDA_FFT - START_CUDA_FFT;
-    std::chrono::duration<double> duration_cuda_fft_without_malloc = END_CUDA_FFT - CUDA_MALLOC_COMPLETE;
-
-    std::cout << "CUDA FFT execution time: " << duration_cuda_fft.count() << " seconds" << std::endl;
-    std::cout << "CUDA FFT execution time WITHOUT MALLOC: " << duration_cuda_fft_without_malloc.count() << " seconds" << std::endl;
-
-    // Convert the results back to std::complex<double>
-    std::vector<std::complex<double>> result(N);
-    for (int i = 0; i < N; ++i)
-    {
-        result[i] = std::complex<double>(device_input[i].x, device_input[i].y);
-    }
-
-    // Cleanup
-    cudaFree(d_input);
-    cufftDestroy(plan);
-
-    return result;
-}
+using namespace std;
 
 /**
  * @brief Compares two vectors of complex numbers with a specified tolerance.
@@ -114,46 +66,6 @@ std::vector<std::complex<double>> cuDoubleComplexToVector(const cuDoubleComplex 
         result[i] = std::complex<double>(cuCreal(a[i]), cuCimag(a[i]));
     }
     return result;
-}
-
-std::vector<std::complex<double>> iterative_FFT(std::vector<std::complex<double>> input)
-{
-    int n = input.size();
-    int m = log2(n);
-    std::vector<std::complex<double>> y(n); // Must a power of 2
-
-    // Bit-reversal permutation
-    for (int i = 0; i < n; i++)
-    {
-        int j = 0;
-        for (int k = 0; k < m; k++)
-        {
-            if (i & (1 << k))
-            {
-                j |= (1 << (m - 1 - k));
-            }
-        }
-        y[j] = input[i];
-    }
-    // Iterative FFT
-    for (int j = 1; j <= m; j++)
-    {
-        int d = 1 << j;
-        std::complex<double> w(1, 0);
-        std::complex<double> wd(std::cos(2 * M_PI / d), std::sin(2 * M_PI / d));
-        for (int k = 0; k < d / 2; k++)
-        {
-            for (int m = k; m < n; m += d)
-            {
-                std::complex<double> t = w * y[m + d / 2];
-                std::complex<double> x = y[m];
-                y[m] = x + t;
-                y[m + d / 2] = x - t;
-            }
-            w = w * wd;
-        }
-    }
-    return y;
 }
 
 // Funzione per graficare usando gnuplot

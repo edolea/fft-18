@@ -1,5 +1,6 @@
 #include "./static_header.hpp"
 #include "main_class.hpp"
+#include "../../src/parameter_class.hpp"
 __device__ void direct_compute_wd_pow_h(double *result_real, double *result_imag, int d, cuDoubleComplex h)
 {
     // Extract real and imaginary parts of h
@@ -200,7 +201,7 @@ void gpu_fft(int grid_size, int log_n, cuDoubleComplex *a, cuDoubleComplex *y, c
     dim3 dimGrid(grid_size);
     dim3 dimBlock(THREAD_PER_BLOCK);
     bool direct = true;
-    parallel_fft_first_computation<<<dimGrid, dimBlock>>>(direct, first_computation_j, grid_size, MainClass::N, grid_size, atomic_array, a, y, x, t, log_n);
+    parallel_fft_first_computation<<<dimGrid, dimBlock>>>(direct, first_computation_j, grid_size, ParameterClass::N, grid_size, atomic_array, a, y, x, t, log_n);
     cudaDeviceSynchronize();
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess)
@@ -209,7 +210,7 @@ void gpu_fft(int grid_size, int log_n, cuDoubleComplex *a, cuDoubleComplex *y, c
     }
     for (int j = *first_computation_j + 1; j <= log_n; j++)
     {
-        parallel_fft_second_computation<<<dimGrid, dimBlock>>>(direct, j, grid_size, MainClass::N, grid_size, atomic_array, y, x, t, log_n);
+        parallel_fft_second_computation<<<dimGrid, dimBlock>>>(direct, j, grid_size, ParameterClass::N, grid_size, atomic_array, y, x, t, log_n);
         cudaDeviceSynchronize();
     }
 }
@@ -219,7 +220,7 @@ void gpu_inverse_fft(int grid_size, int log_n, cuDoubleComplex *a, cuDoubleCompl
     dim3 dimGrid(grid_size);
     dim3 dimBlock(THREAD_PER_BLOCK);
     bool direct = false;
-    parallel_fft_first_computation<<<dimGrid, dimBlock>>>(direct, first_computation_j, grid_size, MainClass::N, grid_size, atomic_array, a, y, x, t, log_n);
+    parallel_fft_first_computation<<<dimGrid, dimBlock>>>(direct, first_computation_j, grid_size, ParameterClass::N, grid_size, atomic_array, a, y, x, t, log_n);
     cudaDeviceSynchronize();
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess)
@@ -228,11 +229,10 @@ void gpu_inverse_fft(int grid_size, int log_n, cuDoubleComplex *a, cuDoubleCompl
     }
     for (int j = *first_computation_j + 1; j <= log_n; j++)
     {
-        parallel_fft_second_computation<<<dimGrid, dimBlock>>>(direct, j, grid_size, MainClass::N, grid_size, atomic_array, y, x, t, log_n);
+        parallel_fft_second_computation<<<dimGrid, dimBlock>>>(direct, j, grid_size, ParameterClass::N, grid_size, atomic_array, y, x, t, log_n);
         cudaDeviceSynchronize();
     }
 }
-
 
 /**
  * @brief Performs a direct Fast Fourier Transform (FFT) on the input data using CUDA.
@@ -243,7 +243,6 @@ void gpu_inverse_fft(int grid_size, int log_n, cuDoubleComplex *a, cuDoubleCompl
  * @param input A vector of complex numbers representing the input data to be transformed.
  * @return A pair containing a vector of complex numbers representing the transformed data and the duration of the FFT execution.
  */
-/*
 std::pair<std::vector<std::complex<double>>, std::chrono::duration<double>> kernel_direct_fft(const std::vector<std::complex<double>> input)
 {
     // CUDA malloc initialization
@@ -269,7 +268,6 @@ std::pair<std::vector<std::complex<double>>, std::chrono::duration<double>> kern
     cudaMallocManaged((void **)&t, sizeof(cuDoubleComplex) * (THREAD_PER_BLOCK * grid_size));
     cudaMallocManaged((void **)&atomic_array, sizeof(int) * (log_n + 1));
     cudaMallocManaged((void **)&first_computation_j, sizeof(int));
-
     // Copy data from std::complex to cuDoubleComplex
     for (size_t i = 0; i < (THREAD_PER_BLOCK * grid_size); ++i)
     {
@@ -289,7 +287,7 @@ std::pair<std::vector<std::complex<double>>, std::chrono::duration<double>> kern
 
     return {cuDoubleComplexToVector(y, input.size()), duration_parallel};
 }
-*/
+
 /**
  * @brief Performs an inverse Fast Fourier Transform (IFFT) on the input data using CUDA.
  *
@@ -299,7 +297,7 @@ std::pair<std::vector<std::complex<double>>, std::chrono::duration<double>> kern
  *
  * @param input A vector of complex numbers representing the input data to be transformed.
  * @return A vector of complex numbers representing the transformed data.
- */ /*
+ */
 std::vector<std::complex<double>> kernel_inverse_fft(const std::vector<std::complex<double>> input)
 {
     // CUDA malloc initialization
@@ -351,5 +349,3 @@ std::vector<std::complex<double>> kernel_inverse_fft(const std::vector<std::comp
 
     return result;
 }
-
-*/
