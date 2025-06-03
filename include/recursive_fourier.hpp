@@ -5,14 +5,11 @@
 
 template <typename T>
 class RecursiveFourier : public BaseTransform<T> {
-public:
-    explicit RecursiveFourier(const T &input) : BaseTransform<T>(input) {}
-
-    void compute() override {
-        this->output = computation(this->input);
+private:
+    void computeImpl(const T &input, T &output) override {
+        output = computation(input);
     }
 
-private:
     T computation(const T& x) {
         if (x.size() == 1) {
             return x;
@@ -43,14 +40,18 @@ private:
             return y;
         }
     }
+
+public:
+    void executionTime() const override{
+        std::cout << "Recursive FFT time: "
+                  << this->time.count() << " seconds" << std::endl;
+    }
 };
 
 
 template<typename T>
-class RecursiveTemplateFft : BaseTransform<T> {
-public:
-    explicit RecursiveTemplateFft(const T &input) : BaseTransform<T>(input) {}
-
+class RecursiveTemplateFft : public BaseTransform<T> {
+protected:
     void compute() override {
         this->output = computation(this->input);
     }

@@ -34,7 +34,6 @@ include_directories(
 # add executable
 add_executable(fft
         src/main.cpp
-        src/fourier_transform.cpp
 )
 
 # testing

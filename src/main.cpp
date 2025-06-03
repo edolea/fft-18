@@ -6,10 +6,6 @@
 #include "parameter_class.hpp"
 void vector_print(const doubleVector &result);
 
-// already in abstract, here to remember them
-// using floatVector = std::vector<std::complex<float>>;
-// using doubleVector = std::vector<std::complex<double>>;
-
 int ParameterClass::N = 0;
 double ParameterClass::frequency = 0.0;
 double ParameterClass::amplitude = 0.0;
@@ -19,37 +15,27 @@ int main()
     ParameterClass::initializeParameters(1024, 0.5, 1.0);
     const auto vec = RandomVectorGenerator::generate<doubleVector>(ParameterClass::N);
 
-    // RecursiveFft<doubleVector> fft(vec);
-    IterativeFourier<doubleVector> iterativeFourier(vec);
-    // RecursiveFft fft(vec);
-    // fft.compute();
-    iterativeFourier.compute();
+    const auto input = RandomVectorGenerator::generate<doubleVector>(8);
+    doubleVector output;
+    doubleVector output2;
 
-    // Use polymorphism to call the desired transform
-    std::unique_ptr<BaseTransform<doubleVector>> fft;
+    RecursiveFourier<doubleVector> recursiveFourier;
+    IterativeFourier<doubleVector> iterativeFourier;
 
-    // Assign RecursiveFft or IterativeFft
-    fft = std::make_unique<RecursiveFourier<doubleVector>>(vec);
-    fft->compute();
-    ComplexVector auto result = fft->getOutput();
+    recursiveFourier.compute(input, output);
+    iterativeFourier.compute(input, output2);
 
-    fft = std::make_unique<IterativeFourier<doubleVector>>(vec);
-    fft->compute();
-    ComplexVector auto result_iter = fft->getOutput();
-    // here ComplexVector is redundant, but still a nice double check for output type
 
     std::cout << "result recursive" << std::endl;
-    vector_print(result);
+    vector_print(output);
     std::cout << "\nresult iterative" << std::endl;
-    vector_print(result_iter);
+    vector_print(output2);
 
-    // std::cout << '\n' << std::thread::hardware_concurrency() << '\n';
+    recursiveFourier.executionTime();
+    iterativeFourier.executionTime();
 }
 
-void vector_print(const doubleVector &result)
-{
+void vector_print(const doubleVector &result) {
     for (auto i : result)
-    {
         std::cout << i << std::endl;
-    }
 }

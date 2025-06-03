@@ -3,19 +3,10 @@
 
 #include <abstract_transform.hpp>
 
-
-template <typename T> // why using typename or ComplexVector is the same?
+template <typename T>
 class IterativeFourier : public BaseTransform<T> {
-
-public:
-    explicit IterativeFourier(const T& input) : BaseTransform<T>(input) {}
-
-    void compute() override {
-        this->output = computation(this->input);
-    }
-
 private:
-    T computation(const T& input) const {
+    void computeImpl(const T &input, T &output) override {
         int n = input.size();
         int m = static_cast<int>(log2(n));
         T y(n); // Must a power of 2
@@ -45,7 +36,14 @@ private:
                 w = w * wd;
             }
         }
-        return y;
+        output = std::move(y);
+
+    }
+
+public:
+    void executionTime() const override {
+        std::cout << "Iterative FFT time: "
+                  << this->time.count() << " seconds" << std::endl;
     }
 };
 
