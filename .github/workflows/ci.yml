@@ -14,6 +14,14 @@ jobs:
         with:
           submodules: recursive # Ensures submodules are initialized and updated
 
+      # Add this step to install CUDA toolkit
+      - name: Install CUDA
+        uses: Jimver/cuda-toolkit@v0.2
+        id: cuda-toolkit
+        with:
+          cuda: '11.8.0'  # Specify a CUDA version (adjust as needed)
+
+
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1
         with:
