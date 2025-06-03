@@ -18,34 +18,30 @@ int main()
 {
     ParameterClass::initializeParameters(1024, 0.5, 1.0);
     const auto vec = RandomVectorGenerator::generate<doubleVector>(ParameterClass::N);
-    /*
 
-     // RecursiveFft<doubleVector> fft(vec);
-        IterativeFourier<doubleVector> iterativeFourier(vec);
-        // RecursiveFft fft(vec);
-        // fft.compute();
-        iterativeFourier.compute();
+    // RecursiveFft<doubleVector> fft(vec);
+    IterativeFourier<doubleVector> iterativeFourier(vec);
+    // RecursiveFft fft(vec);
+    // fft.compute();
+    iterativeFourier.compute();
 
-        // Use polymorphism to call the desired transform
-        std::unique_ptr<BaseTransform<doubleVector>> fft;
+    // Use polymorphism to call the desired transform
+    std::unique_ptr<BaseTransform<doubleVector>> fft;
 
-        // Assign RecursiveFft or IterativeFft
-        fft = std::make_unique<RecursiveFourier<doubleVector>>(vec);
-        fft->compute();
-        ComplexVector auto result = fft->getOutput();
+    // Assign RecursiveFft or IterativeFft
+    fft = std::make_unique<RecursiveFourier<doubleVector>>(vec);
+    fft->compute();
+    ComplexVector auto result = fft->getOutput();
 
-        fft = std::make_unique<IterativeFourier<doubleVector>>(vec);
-        fft->compute();
-        ComplexVector auto result_iter = fft->getOutput();
-        // here ComplexVector is redundant, but still a nice double check for output type
+    fft = std::make_unique<IterativeFourier<doubleVector>>(vec);
+    fft->compute();
+    ComplexVector auto result_iter = fft->getOutput();
+    // here ComplexVector is redundant, but still a nice double check for output type
 
-        std::cout << "result recursive" << std::endl;
-        vector_print(result);
-        std::cout << "\nresult iterative" << std::endl;
-        vector_print(result_iter);
-
-
-    */
+    std::cout << "result recursive" << std::endl;
+    vector_print(result);
+    std::cout << "\nresult iterative" << std::endl;
+    vector_print(result_iter);
 
     // std::cout << '\n' << std::thread::hardware_concurrency() << '\n';
 }
