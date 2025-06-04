@@ -8,23 +8,31 @@ class IterativeFourier : public BaseTransform<T>
 {
 private:
     typename T::value_type initial_w{1, 0};
+    bool direct = true;
+
     void computeDirect(const T &input, T &output) override
     {
-        initial_w = {+1, 0};
+        initial_w = {1, 0};
+        direct = true;
         this->algorithm(input, output);
     }
 
     void computeInverse(const T &input, T &output) override
     {
         initial_w = {-1, 0};
+        direct = false;
         this->algorithm(input, output);
+
+        // Normalize output
+        for (auto &val : output)
+            val /= input.size();
     }
 
     void algorithm(const T &input, T &output)
     {
         int n = input.size();
         int m = static_cast<int>(log2(n));
-        T y(n); // Must a power of 2
+        T y(n);
 
         // Bit-reversal permutation
         for (int i = 0; i < n; i++)
@@ -35,33 +43,39 @@ private:
                     j |= (1 << (m - 1 - k));
             y[j] = input[i];
         }
-        // Iterative FFT
+
+        // Iterative Cooley-Tukey FFT
         for (int j = 1; j <= m; j++)
         {
             int d = 1 << j;
 
-            typename T::value_type wd{std::cos(2 * M_PI / d), std::sin(2 * M_PI / d)};
-            typename T::value_type w{initial_w};
-            for (int k = 0; k < d / 2; k++)
+            typename T::value_type wn;
+            if (direct)
+                wn = typename T::value_type{std::cos(2 * M_PI / d), std::sin(2 * M_PI / d)};
+            else
+                wn = typename T::value_type{std::cos(2 * M_PI / d), -std::sin(2 * M_PI / d)};
+
+            for (int k = 0; k < n; k += d)
             {
-                for (int m = k; m < n; m += d)
+                typename T::value_type w{1, 0};
+                for (int i = 0; i < d / 2; i++)
                 {
-                    typename T::value_type t{w * y[m + d / 2]};
-                    typename T::value_type x{y[m]};
-                    y[m] = x + t;
-                    y[m + d / 2] = x - t;
+                    typename T::value_type t = w * y[k + i + d / 2];
+                    typename T::value_type u = y[k + i];
+                    y[k + i] = u + t;
+                    y[k + i + d / 2] = u - t;
+                    w = w * wn;
                 }
-                w = w * wd;
             }
         }
+
         output = std::move(y);
     }
 
 public:
     void executionTime() const override
     {
-        std::cout << "Iterative FFT time: "
-                  << this->time.count() << " seconds" << std::endl;
+        std::cout << "Iterative FFT time: " << this->time.count() << " seconds" << std::endl;
     }
 };
 

@@ -96,21 +96,14 @@ TEST_F(FourierTransformTest, InverseFftRestoresInput_N64)
 
     // Recursive FFT and inverse FFT
     recursiveFft.computeDir(input, fft_output);
-    recursiveFft.computeInv(fft_output, ifft_output);
-
-    // Normalize the output (since many FFT implementations do not normalize inverse)
-    for (auto &val : ifft_output)
-        val /= static_cast<double>(size);
+    recursiveFft.computeInv(fft_output, ifft_output); // Already normalized
 
     EXPECT_TRUE(areEqual(input, ifft_output))
         << "Recursive FFT+IFFT did not restore input for size " << size;
 
     // Iterative FFT and inverse FFT
     iterativeFft.computeDir(input, fft_output);
-    iterativeFft.computeInv(fft_output, ifft_output);
-
-    for (auto &val : ifft_output)
-        val /= static_cast<double>(size);
+    iterativeFft.computeInv(fft_output, ifft_output); // Already normalized
 
     EXPECT_TRUE(areEqual(input, ifft_output))
         << "Iterative FFT+IFFT did not restore input for size " << size;
@@ -128,14 +121,10 @@ TEST_F(FourierTransformTest, InverseFftKnownInput_N64)
     doubleVector output;
 
     // Recursive
-    recursiveFft.computeInv(freq_input, output);
-    for (auto &val : output)
-        val /= static_cast<double>(size);
-    EXPECT_TRUE(areEqual(output, expected));
+    recursiveFft.computeInv(freq_input, output); // Already normalized
+    EXPECT_TRUE(areEqual(output, expected)) << "Recursive IFFT failed on known input";
 
     // Iterative
-    iterativeFft.computeInv(freq_input, output);
-    for (auto &val : output)
-        val /= static_cast<double>(size);
-    EXPECT_TRUE(areEqual(output, expected));
+    iterativeFft.computeInv(freq_input, output); // Already normalized
+    EXPECT_TRUE(areEqual(output, expected)) << "Iterative IFFT failed on known input";
 }
