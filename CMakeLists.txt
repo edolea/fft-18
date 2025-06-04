@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0074 NEW)  # policy needed for openMP homebrew paths
 
 # Project name
 project(fft)
@@ -42,26 +42,26 @@ add_executable(cpu_test
         test/cpu_test.cpp
 )
 
+if (!APPLE)
+    # Enable CUDA
+    enable_language(CUDA)
 
-# Enable CUDA
-enable_language(CUDA)
+    # Executable 3: GPU parallel
+    add_executable(gpu_exec
+        src/gpu_test.cu
+    )
 
-# Executable 3: GPU parallel
-add_executable(gpu_exec
-    src/gpu_test.cu
-)
+    # Set CUDA architecture to sm_70
+    set_target_properties(gpu_exec PROPERTIES
+        CUDA_ARCHITECTURES 70
+    )
 
-# Set CUDA architecture to sm_70
-set_target_properties(gpu_exec PROPERTIES
-    CUDA_ARCHITECTURES 70
-)
+    # Suppress warning #550 for unused variables
+    target_compile_options(gpu_exec PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
 
-# Suppress warning #550 for unused variables
-target_compile_options(gpu_exec PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
-
-# Link against cuFFT
-target_link_libraries(gpu_exec PRIVATE cufft)
-
+    # Link against cuFFT
+    target_link_libraries(gpu_exec PRIVATE cufft)
+endif ()
 
 target_link_libraries(cpu_test gtest_main)
 include(GoogleTest)
