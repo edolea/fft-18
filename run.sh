@@ -13,8 +13,8 @@ cd build
 make
 
 # Run the resulting executable
-./cpu_test
-#./gpu_test
+#./cpu_test
+./gpu_test
 
 
 
