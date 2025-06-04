@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
+cmake_policy(SET CMP0074 NEW)  # policy needed for openMP homebrew paths
 
 # Project name
 project(fft)
@@ -41,49 +42,81 @@ add_executable(cpu_test
         test/cpu_test.cpp
 )
 
+if (!APPLE)
+    # Enable CUDA
+    enable_language(CUDA)
 
-# Enable CUDA
-enable_language(CUDA)
+    # Executable 3: GPU parallel
+    add_executable(gpu_exec
+         src/gpu_main.cu
+    )
 
-# Executable 3: GPU parallel
-add_executable(gpu_exec
-    src/gpu_main.cu
-)
+    # Set CUDA architecture to sm_70
+    set_target_properties(gpu_exec PROPERTIES
+        CUDA_ARCHITECTURES 70
+    )
 
-# Set CUDA architecture to sm_70
-set_target_properties(gpu_exec PROPERTIES
-    CUDA_ARCHITECTURES 70
-)
+    # Suppress warning #550 for unused variables
+    target_compile_options(gpu_exec PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
 
-# Suppress warning #550 for unused variables
-target_compile_options(gpu_exec PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
 
-# Link against cuFFT
-target_link_libraries(gpu_exec PRIVATE cufft)
+    # Link against cuFFT
+    target_link_libraries(gpu_exec PRIVATE cufft)
+
+
+
+        # GPU GoogleTest
+        add_executable(gpu_test
+        test/gpu_test.cu
+        )
+        target_link_libraries(gpu_test gtest_main cufft)
+        set_target_properties(gpu_test PROPERTIES CUDA_ARCHITECTURES 70)
+        target_compile_options(gpu_test PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
+
+        gtest_discover_tests(gpu_test)
+endif ()
 
 # CPU GoogleTest
 target_link_libraries(cpu_test gtest_main)
 include(GoogleTest)
 gtest_discover_tests(cpu_test)
 
-# GPU GoogleTest
-add_executable(gpu_test
-    test/gpu_test.cu
-)
-target_link_libraries(gpu_test gtest_main cufft)
-set_target_properties(gpu_test PROPERTIES CUDA_ARCHITECTURES 70)
-target_compile_options(gpu_test PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
-
-gtest_discover_tests(gpu_test)
 
 # include_directories(${MPI_INCLUDE_PATH})
+include_directories(${MPI_INCLUDE_PATH})
+
+# Set OpenMP paths for Homebrew on macOS
+# OpenMP configuration for macOS/Homebrew
+if(APPLE)
+    execute_process(
+            COMMAND brew --prefix libomp
+            OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+    )
+
+    if(HOMEBREW_LIBOMP_PREFIX)
+        set(OpenMP_ROOT ${HOMEBREW_LIBOMP_PREFIX})
+
+        # Explicitly set the library paths that CMake is looking for
+        set(OpenMP_omp_LIBRARY ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_C_LIB_NAMES "omp")
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+
+        # Set the libraries
+        set(OpenMP_C_LIBRARIES ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+        set(OpenMP_CXX_LIBRARIES ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+    endif()
+endif()
 
 # Link libraries
-# find_package(Threads REQUIRED)
-# find_package(OpenMP REQUIRED)
-# find_package(MPI REQUIRED)
+find_package(Threads REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(MPI REQUIRED)
 
-# target_link_libraries(FFTProject ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(fft ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
 # target_link_libraries(FFTProject Threads::Threads)
 
 # Set compiler flags
