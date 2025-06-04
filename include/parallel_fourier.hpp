@@ -4,7 +4,7 @@
 #include <abstract_transform.hpp>
 #include "../CUDA_FFT/1D/header.hpp"
 
-template <typename T>
+template <typename T = doubleVector>
 class ParallelFourier
 {
 protected:
