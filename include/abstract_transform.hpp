@@ -67,15 +67,15 @@ template <typename T, size_t n>
 concept ComplexArrayContainer = ComplexArray<T, n> || ComplexArrayMatrix<T, n>;
 
 template <ComplexContainer T>
-class BaseTransform
-{
+class BaseTransform {
 protected:
+    std::chrono::duration<double> time{};
+
     // private virtual interface
     virtual void computeDirect(const T &input, T &output) = 0;
     virtual void computeInverse(const T &input, T &output) = 0;
 
 public:
-    std::chrono::duration<double> time{};
     // Public non-virtual interface with timing
     void computeDir(const T &input, T &output)
     {
@@ -95,8 +95,12 @@ public:
 
     virtual void executionTime() const
     {
-        std::cout << "CPU-FFT time: "
+        std::cout << "Abstract FFT time: "
                   << this->time.count() << " seconds" << std::endl;
+    }
+
+    const std::chrono::duration<double> &getTime() const {
+        return time;
     }
 
     virtual ~BaseTransform() = default;
