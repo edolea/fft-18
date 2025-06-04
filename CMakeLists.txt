@@ -37,8 +37,8 @@ add_executable(fft
 )
 
 # testing
-add_executable(my_tests
-        test/fourier_testing.cpp
+add_executable(cpu_test
+        test/cpu_test.cpp
 )
 
 
@@ -62,9 +62,9 @@ target_compile_options(gpu_exec PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppre
 target_link_libraries(gpu_exec PRIVATE cufft)
 
 
-target_link_libraries(my_tests gtest_main)
+target_link_libraries(cpu_test gtest_main)
 include(GoogleTest)
-gtest_discover_tests(my_tests)
+gtest_discover_tests(cpu_test)
 
 # include_directories(${MPI_INCLUDE_PATH})
 

@@ -8,11 +8,12 @@
 #include <type_traits>
 #include <concepts>
 
-constexpr bool isPowerOfTwo(size_t n){
-    return n > 0 && (n & (n-1)) == 0; // very efficient bc single bitwise operation
+constexpr bool isPowerOfTwo(size_t n)
+{
+    return n > 0 && (n & (n - 1)) == 0; // very efficient bc single bitwise operation
 }
 
-template <typename T = std::vector<std::complex<double>> >
+template <typename T = std::vector<std::complex<double>>>
 concept ComplexVector = std::is_same_v<T, std::vector<std::complex<float>>> ||
                         std::is_same_v<T, std::vector<std::complex<double>>>;
 
@@ -28,9 +29,8 @@ template <typename T, size_t n>
 concept ComplexArrayMatrixPre = std::is_same_v<T, std::array<std::array<std::complex<float>, n>, n>> ||
                                 std::is_same_v<T, std::array<std::array<std::complex<double>, n>, n>>;
 
-
 template <typename T>
-concept ComplexVectorMatrix = ComplexVectorMatrixPre<T> && requires(const T& mat) {
+concept ComplexVectorMatrix = ComplexVectorMatrixPre<T> && requires(const T &mat) {
     { mat.size() } -> std::convertible_to<size_t>;
     { mat[0].size() } -> std::convertible_to<size_t>;
     requires !mat.empty() && !mat[0].empty();
@@ -40,7 +40,7 @@ concept ComplexVectorMatrix = ComplexVectorMatrixPre<T> && requires(const T& mat
 };
 
 template <typename T, size_t n>
-concept ComplexArrayMatrix = ComplexArrayMatrixPre<T, n> && requires(const T& mat) {
+concept ComplexArrayMatrix = ComplexArrayMatrixPre<T, n> && requires(const T &mat) {
     { mat.size() } -> std::convertible_to<size_t>;
     { mat[0].size() } -> std::convertible_to<size_t>;
     requires !mat.empty() && !mat[0].empty();
@@ -67,32 +67,41 @@ template <typename T, size_t n>
 concept ComplexArrayContainer = ComplexArray<T, n> || ComplexArrayMatrix<T, n>;
 
 template <ComplexContainer T>
-class BaseTransform {
+class BaseTransform
+{
 protected:
     std::chrono::duration<double> time{};
 
     // private virtual interface
-    virtual void computeImpl(const T& input, T& output) = 0;
+    virtual void computeDirect(const T &input, T &output) = 0;
+    virtual void computeInverse(const T &input, T &output) = 0;
 
 public:
     // Public non-virtual interface with timing
-    void compute(const T& input, T& output) {
+    void computeDir(const T &input, T &output)
+    {
         assert(isPowerOfTwo(input.size()));
 
         auto start = std::chrono::high_resolution_clock::now();
-        computeImpl(input, output);
+        computeDirect(input, output);
         auto end = std::chrono::high_resolution_clock::now();
         time = end - start;
     }
 
-    virtual void executionTime() const{
+    void computeInv(const T &input, T &output)
+    {
+        assert(isPowerOfTwo(input.size()));
+        computeInverse(input, output);
+    }
+
+    virtual void executionTime() const
+    {
         std::cout << "FFT time: "
                   << this->time.count() << " seconds" << std::endl;
     }
 
     virtual ~BaseTransform() = default;
 };
-
 
 /* PER EDO: template partial specialization
 
@@ -103,4 +112,4 @@ public:
 
  */
 
-#endif //FFT_ABSTRACT_TRANSFORM_HPP
+#endif // FFT_ABSTRACT_TRANSFORM_HPP

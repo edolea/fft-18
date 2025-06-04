@@ -22,9 +22,8 @@ int main()
     RecursiveFourier<doubleVector> recursiveFourier;
     IterativeFourier<doubleVector> iterativeFourier;
 
-    recursiveFourier.compute(input, output);
-    iterativeFourier.compute(input, output2);
-
+    recursiveFourier.computeDir(input, output);
+    iterativeFourier.computeDir(input, output2);
 
     std::cout << "result recursive" << std::endl;
     vector_print(output);
@@ -35,7 +34,8 @@ int main()
     iterativeFourier.executionTime();
 }
 
-void vector_print(const doubleVector &result) {
+void vector_print(const doubleVector &result)
+{
     for (auto i : result)
         std::cout << i << std::endl;
 }
