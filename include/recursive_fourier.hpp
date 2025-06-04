@@ -63,4 +63,46 @@ public:
     }
 };
 
+template<typename T>
+class RecursiveTemplateFft : public BaseTransform<T> {
+protected:
+    void compute() override {
+        this->output = computation(this->input);
+    }
+
+private:
+    T computation(const T& x) {
+        if(x.size() == 1){
+            return x;
+        }
+        else{
+            int n = x.size();
+            complexDouble wn{std::cos(2 * M_PI / n), std::sin(2 * M_PI / n)} ;
+            complexDouble w{1,0};
+
+            doubleVector x_even;
+            doubleVector x_odd;
+            for(int i=0; i < n; i++){
+                if(i % 2 == 0){
+                    x_even.push_back(x[i]);
+                }
+                else{
+                    x_odd.push_back(x[i]);
+                }
+            }
+
+            doubleVector y_even = computation(x_even);
+            doubleVector y_odd = computation(x_odd);
+
+            doubleVector y(n);
+            for(int i = 0; i < n/2; i++){
+                y[i] = y_even[i] + w * y_odd[i];
+                y[i + n/2] = y_even[i] - w * y_odd[i];
+                w = w * wn;
+            }
+            return y;
+        }
+    }
+};
+
 #endif // FFT_RECURSIVE_FOURIER_HPP
