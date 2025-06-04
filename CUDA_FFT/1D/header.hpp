@@ -252,7 +252,7 @@ std::pair<std::vector<std::complex<double>>, std::chrono::duration<double>> kern
     int grid_size = input.size() / THREAD_PER_BLOCK;
     if (input.size() % THREAD_PER_BLOCK != 0)
         grid_size++;
-    cout << "\nGPU_PARALLEL   DIRECT_FFT\n";
+    // cout << "\nGPU_PARALLEL   DIRECT_FFT\n";
     auto start_parallel = std::chrono::high_resolution_clock::now();
     int log_n = (int)(log(input.size()) / log(2));
     cuDoubleComplex *a;
@@ -282,8 +282,8 @@ std::pair<std::vector<std::complex<double>>, std::chrono::duration<double>> kern
     auto end_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration_parallel = end_parallel - start_parallel;
     std::chrono::duration<double> duration_parallel_without_malloc = end_parallel - malloc_complete;
-    std::cout << "Parallel FFT execution time: " << duration_parallel.count() << " seconds" << std::endl;
-    std::cout << "Parallel FFT execution time WITHOUT MALLOC: " << duration_parallel_without_malloc.count() << " seconds" << std::endl;
+    // std::cout << "Parallel FFT execution time: " << duration_parallel.count() << " seconds" << std::endl;
+    // std::cout << "Parallel FFT execution time WITHOUT MALLOC: " << duration_parallel_without_malloc.count() << " seconds" << std::endl;
 
     return {cuDoubleComplexToVector(y, input.size()), duration_parallel};
 }

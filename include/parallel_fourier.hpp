@@ -7,6 +7,7 @@
 template <typename T>
 class ParallelFourier
 {
+protected:
 public:
     T input;
     T output;
@@ -16,6 +17,12 @@ public:
     void compute()
     {
         computation(this->input);
+    }
+
+    virtual void executionTime() const
+    {
+        std::cout << "GPU-FFT time: "
+                  << this->execution_time.count() << " seconds" << std::endl;
     }
 
 private:

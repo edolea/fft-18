@@ -14,6 +14,7 @@ make
 
 # Run the resulting executable
 ./cpu_test
+#./gpu_test
 
 
 

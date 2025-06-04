@@ -70,13 +70,12 @@ template <ComplexContainer T>
 class BaseTransform
 {
 protected:
-    std::chrono::duration<double> time{};
-
     // private virtual interface
     virtual void computeDirect(const T &input, T &output) = 0;
     virtual void computeInverse(const T &input, T &output) = 0;
 
 public:
+    std::chrono::duration<double> time{};
     // Public non-virtual interface with timing
     void computeDir(const T &input, T &output)
     {
@@ -96,7 +95,7 @@ public:
 
     virtual void executionTime() const
     {
-        std::cout << "FFT time: "
+        std::cout << "CPU-FFT time: "
                   << this->time.count() << " seconds" << std::endl;
     }
 

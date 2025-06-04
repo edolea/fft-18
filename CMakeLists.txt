@@ -47,7 +47,7 @@ enable_language(CUDA)
 
 # Executable 3: GPU parallel
 add_executable(gpu_exec
-    src/gpu_test.cu
+    src/gpu_main.cu
 )
 
 # Set CUDA architecture to sm_70
@@ -61,10 +61,20 @@ target_compile_options(gpu_exec PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppre
 # Link against cuFFT
 target_link_libraries(gpu_exec PRIVATE cufft)
 
-
+# CPU GoogleTest
 target_link_libraries(cpu_test gtest_main)
 include(GoogleTest)
 gtest_discover_tests(cpu_test)
+
+# GPU GoogleTest
+add_executable(gpu_test
+    test/gpu_test.cu
+)
+target_link_libraries(gpu_test gtest_main cufft)
+set_target_properties(gpu_test PROPERTIES CUDA_ARCHITECTURES 70)
+target_compile_options(gpu_test PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
+
+gtest_discover_tests(gpu_test)
 
 # include_directories(${MPI_INCLUDE_PATH})
 

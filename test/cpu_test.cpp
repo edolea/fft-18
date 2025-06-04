@@ -85,3 +85,57 @@ TEST_F(FourierTransformTest, ComparePerformance)
 
     EXPECT_TRUE(areEqual(recursive_output, iterative_output));
 }
+
+// Test that applying FFT followed by inverse FFT returns the original input (within tolerance) for N = 64
+TEST_F(FourierTransformTest, InverseFftRestoresInput_N64)
+{
+    const size_t size = 64;
+    const auto input = RandomVectorGenerator::generate<doubleVector>(size);
+
+    doubleVector fft_output, ifft_output;
+
+    // Recursive FFT and inverse FFT
+    recursiveFft.computeDir(input, fft_output);
+    recursiveFft.computeInv(fft_output, ifft_output);
+
+    // Normalize the output (since many FFT implementations do not normalize inverse)
+    for (auto &val : ifft_output)
+        val /= static_cast<double>(size);
+
+    EXPECT_TRUE(areEqual(input, ifft_output))
+        << "Recursive FFT+IFFT did not restore input for size " << size;
+
+    // Iterative FFT and inverse FFT
+    iterativeFft.computeDir(input, fft_output);
+    iterativeFft.computeInv(fft_output, ifft_output);
+
+    for (auto &val : ifft_output)
+        val /= static_cast<double>(size);
+
+    EXPECT_TRUE(areEqual(input, ifft_output))
+        << "Iterative FFT+IFFT did not restore input for size " << size;
+}
+
+// Test inverse FFT on a known frequency domain vector for N = 64
+TEST_F(FourierTransformTest, InverseFftKnownInput_N64)
+{
+    const size_t size = 64;
+    // Frequency domain: [64, 0, 0, ..., 0] (should yield time domain: [1, 1, ..., 1])
+    doubleVector freq_input(size, complexDouble(0, 0));
+    freq_input[0] = complexDouble(static_cast<double>(size), 0);
+
+    doubleVector expected(size, complexDouble(1, 0));
+    doubleVector output;
+
+    // Recursive
+    recursiveFft.computeInv(freq_input, output);
+    for (auto &val : output)
+        val /= static_cast<double>(size);
+    EXPECT_TRUE(areEqual(output, expected));
+
+    // Iterative
+    iterativeFft.computeInv(freq_input, output);
+    for (auto &val : output)
+        val /= static_cast<double>(size);
+    EXPECT_TRUE(areEqual(output, expected));
+}
