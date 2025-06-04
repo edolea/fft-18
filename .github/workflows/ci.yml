@@ -6,6 +6,8 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: nvidia/cuda:11.8.0-devel-ubuntu22.04
 
     steps:
       # Checkout the repository with submodules
@@ -14,16 +16,10 @@ jobs:
         with:
           submodules: recursive # Ensures submodules are initialized and updated
 
-      - name: Install CUDA
-        uses: Jimver/cuda-toolkit@v0.2.11
-        with:
-          cuda: '11.8.0'
-          method: 'network'
-
       - name: Verify CUDA installation
         run: |
           nvcc --version
-          nvidia-smi || echo "nvidia-smi not available (expected in GitHub Actions)"
+          ls -la /usr/local/cuda/lib64/
 
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1
