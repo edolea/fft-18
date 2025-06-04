@@ -55,7 +55,7 @@ TEST(GPUvsCPU, CompareCPUandGPU)
     gpuFft.compute();
 
     // Try to get the result: adjust this line if your class uses a different member
-    const auto &gpu_output = gpuFft.output; // or gpuFft.getResult() if that's correct
+    const auto &gpu_output = gpuFft.getOutput(); // or gpuFft.getResult() if that's correct
 
     EXPECT_TRUE(areEqual(cpu_output, gpu_output))
         << "CPU and GPU FFT results differ!";
@@ -79,7 +79,7 @@ TEST(GPUvsCPU, ComparePerformanceSmallSizes)
 
         // Print performance results (not a test assertion)
         std::cout << "N = " << N
-                  << " | CPU time: " << recursiveFft.time.count() << " ms"
-                  << " | GPU time: " << gpuFft.execution_time.count() << " ms" << std::endl;
+                  << " | CPU time: " << recursiveFft.getTime() << " ms"
+                  << " | GPU time: " << gpuFft.getTime() << " ms" << std::endl;
     }
 }

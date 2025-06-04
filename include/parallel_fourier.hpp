@@ -8,10 +8,11 @@ template <typename T>
 class ParallelFourier
 {
 protected:
-public:
     T input;
     T output;
-    std::chrono::duration<double> execution_time;
+    std::chrono::duration<double> time;
+
+public:
     explicit ParallelFourier(const T &in) : input(in) {}
 
     void compute()
@@ -22,7 +23,21 @@ public:
     virtual void executionTime() const
     {
         std::cout << "GPU-FFT time: "
-                  << this->execution_time.count() << " seconds" << std::endl;
+                  << this->time.count() << " seconds" << std::endl;
+    }
+
+    const std::chrono::duration<double> &getTime() const
+    {
+        return time;
+    }
+
+    const T &getOutput() const
+    {
+        return output;
+    }
+    const T &getInput() const
+    {
+        return input;
     }
 
 private:
@@ -30,7 +45,7 @@ private:
     {
         auto result = kernel_direct_fft(input);
         this->output = result.first;
-        this->execution_time = result.second;
+        this->time = result.second;
     }
 };
 
