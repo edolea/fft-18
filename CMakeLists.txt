@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
+cmake_policy(SET CMP0074 NEW)
 
 # Project name
 project(fft)
@@ -66,14 +67,40 @@ target_link_libraries(my_tests gtest_main)
 include(GoogleTest)
 gtest_discover_tests(my_tests)
 
-# include_directories(${MPI_INCLUDE_PATH})
+include_directories(${MPI_INCLUDE_PATH})
+
+# Set OpenMP paths for Homebrew on macOS
+# OpenMP configuration for macOS/Homebrew
+if(APPLE)
+    execute_process(
+            COMMAND brew --prefix libomp
+            OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+    )
+
+    if(HOMEBREW_LIBOMP_PREFIX)
+        set(OpenMP_ROOT ${HOMEBREW_LIBOMP_PREFIX})
+
+        # Explicitly set the library paths that CMake is looking for
+        set(OpenMP_omp_LIBRARY ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_C_LIB_NAMES "omp")
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+
+        # Set the libraries
+        set(OpenMP_C_LIBRARIES ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+        set(OpenMP_CXX_LIBRARIES ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+    endif()
+endif()
 
 # Link libraries
-# find_package(Threads REQUIRED)
-# find_package(OpenMP REQUIRED)
-# find_package(MPI REQUIRED)
+find_package(Threads REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(MPI REQUIRED)
 
-# target_link_libraries(FFTProject ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(fft ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
 # target_link_libraries(FFTProject Threads::Threads)
 
 # Set compiler flags
