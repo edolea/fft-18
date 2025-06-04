@@ -13,7 +13,7 @@ cd build
 make
 
 # Run the resulting executable
-./FFTMain
+./cpu_test
 
 
 

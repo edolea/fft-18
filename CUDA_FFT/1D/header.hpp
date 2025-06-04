@@ -1,6 +1,6 @@
 #include "./static_header.hpp"
 #include "main_class.hpp"
-#include "../../src/parameter_class.hpp"
+#include "parameter_class.hpp"
 __device__ void direct_compute_wd_pow_h(double *result_real, double *result_imag, int d, cuDoubleComplex h)
 {
     // Extract real and imaginary parts of h
