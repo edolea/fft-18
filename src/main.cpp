@@ -48,11 +48,21 @@ int main()
 
     const auto input2D = RandomVectorGenerator::generate<doubleMatrix>(size, frequency, amplitude);
     doubleMatrix output2D;
+    doubleMatrix output2D_rec;
 
     IterativeFourier<doubleMatrix> iterativeFourier2D;
+    RecursiveFourier<doubleMatrix> recursiveFourier2D;
+
     iterativeFourier2D.compute(input2D, output2D);
+    iterativeFourier2D.compute(input2D, output2D_rec);
+
     std::cout << "\n\nresult 2D direct iterative" << std::endl;
     matrix_print(output2D);
+    std::cout << "\nresult 2D direct recursive" << std::endl;
+    matrix_print(output2D_rec);
+
+    iterativeFourier2D.executionTime();
+    iterativeFourier2D.executionTime();
 }
 
 void vector_print(const doubleVector &result) {

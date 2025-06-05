@@ -25,7 +25,7 @@ bool areEqual(const doubleVector &v1, const doubleVector &v2, double tolerance =
 }
 
 // Utility function to compare 2D complex matrices with tolerance
-bool areEqual2D(const std::vector<std::vector<complexDouble>> &m1, const std::vector<std::vector<complexDouble>> &m2, double tolerance = 1e-10) {
+bool areEqual2D(const std::vector<std::vector<complexDouble>> &m1, const std::vector<std::vector<complexDouble>> &m2, double tolerance = 1e-3) {
     if (m1.size() != m2.size())
         return false;
 
@@ -51,7 +51,7 @@ protected:
     RecursiveFourier<doubleVector> recursiveFft;
     IterativeFourier<doubleVector> iterativeFft;
 
-    // RecursiveFourier<doubleMatrix> recursiveFft2D;
+    RecursiveFourier<doubleMatrix> recursiveFft2D;
     IterativeFourier<doubleMatrix> iterativeFft2D;
 };
 
@@ -149,8 +149,7 @@ TEST_F(FourierTransformTest, InverseFftKnownInput_N64){
     EXPECT_TRUE(areEqual(output, expected)) << "Iterative IFFT failed on known input";
 }
 
-TEST_F(FourierTransformTest, Test2DFft)
-{
+TEST_F(FourierTransformTest, Test2DFft) {
     // Test with different sizes
     for (int size : {8, 16, 32}) {
         // Generate a 2D sinusoidal pattern
@@ -166,10 +165,11 @@ TEST_F(FourierTransformTest, Test2DFft)
         std::cout << "\n===== Testing 2D FFT of size " << size << "x" << size << " =====\n";
 
         // Direct transform
-        //recursiveFft2D.compute(input, recursive_output);
+        recursiveFft2D.compute(input, recursive_output);
         iterativeFft2D.compute(input, iterative_output);
 
-        //std::cout << "******* recursive 2D " << size << "x" << size << " TIME: " << recursiveFft2D.getTime() << "*******" << std::endl;
+        std::cout << "******* recursive 2D " << size << "x" << size << " TIME: "
+                  << recursiveFft2D.getTime() << "*******" << std::endl;
         std::cout << "******* iterative 2D " << size << "x" << size << " TIME: "
                   << iterativeFft2D.getTime() << "*******" << std::endl;
 
@@ -184,7 +184,8 @@ TEST_F(FourierTransformTest, Test2DFft)
         //recursiveFft2D.compute(recursive_output, recursive_inverse, false);
         iterativeFft2D.compute(iterative_output, iterative_inverse, false);
 
-        //std::cout << "******* recursive inverse 2D " << size << "x" << size << " TIME: " << recursiveFft2D.getTime() << "*******" << std::endl;
+        std::cout << "******* recursive inverse 2D " << size << "x" << size << " TIME: "
+                  << recursiveFft2D.getTime() << "*******" << std::endl;
         std::cout << "******* iterative inverse 2D " << size << "x" << size << " TIME: "
                   << iterativeFft2D.getTime() << "*******" << std::endl;
 

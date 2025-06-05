@@ -8,7 +8,7 @@ class IterativeFourier final : public BaseTransform<T> {
     bool direct{};  // only used for printing execution time
 
     // Helper method for 1D FFT computation
-    template <typename VectorType>
+    template <ComplexVector VectorType>
     void compute1D(const VectorType &input, VectorType &output, bool isDirect) {
         int n = input.size();
         int m = static_cast<int>(log2(n));
@@ -58,7 +58,7 @@ class IterativeFourier final : public BaseTransform<T> {
             int rows = input.size();
             if (rows == 0) return;
 
-            int cols = input[0].size();
+            int cols = input[0].size(); // FIXME: togli che c'è l'asertion gia
             //output.resize(rows * cols);
             output = input; // Initialize output with input
 
