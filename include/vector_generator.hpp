@@ -59,13 +59,9 @@ public:
 
     template <ComplexContainer T>
     static T generate(int dim, double frequency, double amplitude) {
-        // Helper to check if T is a vector of vectors (matrix)
-        constexpr bool is_matrix =
-            std::is_same_v<T, std::vector<std::vector<std::complex<double>>>> ||
-            std::is_same_v<T, std::vector<std::vector<std::complex<float>>>>;
-
         T input;
-        if constexpr (is_matrix) {
+
+        if constexpr (ComplexVectorMatrix<T>) {
             input.reserve(dim);
             for (int i = 0; i < dim; ++i) {
                 input.emplace_back();
