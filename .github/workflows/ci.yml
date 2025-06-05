@@ -1,12 +1,10 @@
 name: C++ CI
 
-
 on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
 
     steps:
       # Checkout the repository with submodules
@@ -14,6 +12,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive # Ensures submodules are initialized and updated
+
+      - name: Install MPI and openMP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenmpi-dev openmpi-bin libomp-dev
 
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1
