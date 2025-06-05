@@ -307,7 +307,7 @@ std::vector<std::complex<double>> kernel_inverse_fft(const std::vector<std::comp
     int grid_size = input.size() / THREAD_PER_BLOCK;
     if (input.size() % THREAD_PER_BLOCK != 0)
         grid_size++;
-    cout << "\nGPU_PARALLEL INVERSE_FFT\n";
+    // cout << "\nGPU_PARALLEL INVERSE_FFT\n";
     auto start_parallel = std::chrono::high_resolution_clock::now();
     int log_n = (int)(log(input.size()) / log(2));
     cuDoubleComplex *a;
@@ -337,8 +337,8 @@ std::vector<std::complex<double>> kernel_inverse_fft(const std::vector<std::comp
     auto end_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration_parallel = end_parallel - start_parallel;
     std::chrono::duration<double> duration_parallel_without_malloc = end_parallel - malloc_complete;
-    std::cout << "Parallel IFFT execution time: " << duration_parallel.count() << " seconds" << std::endl;
-    std::cout << "Parallel IFFT execution time WITHOUT MALLOC: " << duration_parallel_without_malloc.count() << " seconds" << std::endl;
+    // std::cout << "Parallel IFFT execution time: " << duration_parallel.count() << " seconds" << std::endl;
+    // std::cout << "Parallel IFFT execution time WITHOUT MALLOC: " << duration_parallel_without_malloc.count() << " seconds" << std::endl;
 
     auto result = cuDoubleComplexToVector(y, input.size());
     // Normalize the IFFT result

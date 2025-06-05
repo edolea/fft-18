@@ -32,12 +32,12 @@ protected:
     }
 };
 
-TEST_F(ParallelFourierGPUTest, ComputeDoesNotThrow)
+TEST_F(ParallelFourierGPUTest, computeDirDoesNotThrow)
 {
     const auto vec = RandomVectorGenerator::generate<doubleVector>(ParameterClass::N);
     ParallelFourier<doubleVector> parallelFourier(vec);
 
-    EXPECT_NO_THROW(parallelFourier.compute());
+    EXPECT_NO_THROW(parallelFourier.computeDir());
 }
 
 TEST(GPUvsCPU, CompareCPUandGPU)
@@ -52,7 +52,7 @@ TEST(GPUvsCPU, CompareCPUandGPU)
 
     // GPU computation
     ParallelFourier<doubleVector> gpuFft(input);
-    gpuFft.compute();
+    gpuFft.computeDir();
 
     // Try to get the result: adjust this line if your class uses a different member
     const auto &gpu_output = gpuFft.getOutput(); // or gpuFft.getResult() if that's correct
@@ -75,11 +75,27 @@ TEST(GPUvsCPU, ComparePerformanceSmallSizes)
 
         // GPU computation timing
         ParallelFourier<doubleVector> gpuFft(input);
-        gpuFft.compute();
+        gpuFft.computeDir();
 
         // Print performance results (not a test assertion)
         std::cout << "N = " << N
                   << " | CPU time: " << recursiveFft.getTime() << " ms"
                   << " | GPU time: " << gpuFft.getTime() << " ms" << std::endl;
     }
+}
+TEST(INVERSEGPU,  InverseFftRestoresInput_N64) {
+    int N = 1024; // Size of the input vector
+    ParameterClass::initializeParameters(N, 0.5, 1.0);
+    const auto input = RandomVectorGenerator::generate<doubleVector>(N);
+    // GPU computation timing
+    ParallelFourier<doubleVector> gpuFft(input);
+    gpuFft.computeDir();
+    auto dir_output = gpuFft.getOutput();
+    // Inverse FFT
+    gpuFft.computeInv(dir_output);
+    auto inv_output = gpuFft.getOutput();
+    // Check if the inverse FFT restores the original input
+    EXPECT_TRUE(areEqual(input, inv_output, 1e-5))
+        << "Inverse FFT did not restore the original input!";
+
 }

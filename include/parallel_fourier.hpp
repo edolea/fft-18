@@ -15,9 +15,13 @@ protected:
 public:
     explicit ParallelFourier(const T &in) : input(in) {}
 
-    void compute()
+    void computeDir()
     {
-        computation(this->input);
+        computationDir(this->input);
+    }
+
+    void computeInv(const T &inv_input) {
+        computationInv(inv_input);
     }
 
     virtual void executionTime() const
@@ -41,11 +45,15 @@ public:
     }
 
 private:
-    void computation(const T &input)
+    void computationDir(const T &input)
     {
         auto result = kernel_direct_fft(input);
         this->output = result.first;
         this->time = result.second;
+    }
+    void computationInv(const T &input)
+    {
+       this->output  = kernel_inverse_fft(input);
     }
 };
 
