@@ -7,18 +7,6 @@ template <typename T>
 class IterativeFourier final : public BaseTransform<T> {
     bool direct{};  // only used for printing execution time
 
-    // Helper to check if T is a vector of vectors (matrix)
-    template <typename U>
-    static constexpr bool is_complex_matrix =
-        std::is_same_v<U, std::vector<std::vector<std::complex<double>>>> ||
-        std::is_same_v<U, std::vector<std::vector<std::complex<float>>>>;
-
-    // Helper to check if T is a vector (1D array)
-    template <typename U>
-    static constexpr bool is_complex_vector =
-        std::is_same_v<U, std::vector<std::complex<double>>> ||
-        std::is_same_v<U, std::vector<std::complex<float>>>;
-
     // Helper method for 1D FFT computation
     template <typename VectorType>
     void compute1D(const VectorType &input, VectorType &output, bool isDirect) {
@@ -62,11 +50,11 @@ class IterativeFourier final : public BaseTransform<T> {
         direct = isDirect;
 
         // 1D FFT implementation
-        if constexpr (is_complex_vector<T>) {
+        if constexpr (ComplexVector<T>) {
             compute1D(input, output, isDirect);
         }
         // 2D FFT implementation using row-column decomposition
-        else if constexpr (is_complex_matrix<T>) {
+        else if constexpr (ComplexVectorMatrix<T>) {
             int rows = input.size();
             if (rows == 0) return;
 
@@ -114,9 +102,9 @@ public:
     void executionTime() const override {
         std::cout << "Iterative " << (direct ? "Direct" : "Inverse") << " ";
 
-        if constexpr (is_complex_vector<T>) {
+        if constexpr (ComplexVector<T>) {
             std::cout << "1D";
-        } else if constexpr (is_complex_matrix<T>) {
+        } else if constexpr (ComplexVectorMatrix<T>) {
             std::cout << "2D";
         }
 

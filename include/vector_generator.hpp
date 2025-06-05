@@ -57,7 +57,7 @@ public:
         return randomVector;
     }
 
-    template <ComplexVector T>
+    template <ComplexContainer T>
     static T generate(int dim, double frequency, double amplitude) {
         // Helper to check if T is a vector of vectors (matrix)
         constexpr bool is_matrix =

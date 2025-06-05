@@ -1,20 +1,19 @@
 #include <iostream>
-#include <unistd.h>
-
 #include "vector_generator.hpp"
 #include "recursive_fourier.hpp"
 #include "iterative_fourier.hpp"
 #include "parameter_class.hpp"
-void vector_print(const doubleVector &result);
 
-int ParameterClass::N = 0;
-double ParameterClass::frequency = 0.0;
-double ParameterClass::amplitude = 0.0;
+
+void vector_print(const doubleVector &result);
+void matrix_print(const doubleMatrix &matrix);
+
+int size = 8;
+double frequency = 2.0;
+double amplitude = 1.0;
 
 int main()
 {
-    ParameterClass::initializeParameters(1024, 0.5, 1.0);
-
     const auto input = RandomVectorGenerator::generate<doubleVector>(8);
     doubleVector output;
     doubleVector output2;
@@ -46,10 +45,36 @@ int main()
 
     recursiveFourier.executionTime();
     iterativeFourier.executionTime();
+
+    const auto input2D = RandomVectorGenerator::generate<doubleMatrix>(size, frequency, amplitude);
+    doubleMatrix output2D;
+
+    IterativeFourier<doubleMatrix> iterativeFourier2D;
+    iterativeFourier2D.compute(input2D, output2D);
+    std::cout << "\n\nresult 2D direct iterative" << std::endl;
+    matrix_print(output2D);
 }
 
-void vector_print(const doubleVector &result)
-{
+void vector_print(const doubleVector &result) {
     for (auto i : result)
         std::cout << i << std::endl;
+}
+
+void matrix_print(const doubleMatrix &matrix) {
+    if (matrix.empty()) {
+        std::cout << "Empty matrix" << std::endl;
+        return;
+    }
+
+    // Get dimensions for reference
+    size_t rows = matrix.size();
+    size_t cols = matrix[0].size();
+
+    std::cout << "Matrix " << rows << "x" << cols << ":" << std::endl;
+
+    for (const auto &row : matrix) {
+        for (const auto &elem : row)
+            std::cout << elem << " ";
+        std::cout << std::endl;
+    }
 }

@@ -32,10 +32,11 @@ template <typename T>
 concept ComplexVectorMatrix = ComplexVectorMatrixPre<T> && requires(const T &mat) {
     { mat.size() } -> std::convertible_to<size_t>;
     { mat[0].size() } -> std::convertible_to<size_t>;
-    requires !mat.empty() && !mat[0].empty();
+    { mat.empty() } -> std::convertible_to<bool>;
+    { mat[0].empty() } -> std::convertible_to<bool>;
     { isPowerOfTwo(mat.size()) } -> std::convertible_to<bool>;
     { isPowerOfTwo(mat[0].size()) } -> std::convertible_to<bool>;
-    requires mat.size() == mat[0].size(); // Ensure matrix is square
+    { mat.size() == mat[0].size() } -> std::convertible_to<bool>;
 };
 
 template <typename T, size_t n>
@@ -76,7 +77,14 @@ protected:
 public:
     // Public non-virtual interface with timing
     void compute(const T &input, T &output, const bool& direct=true) {
-        assert(isPowerOfTwo(input.size()));
+        if constexpr (ComplexVector<T>) {
+            assert(isPowerOfTwo(input.size()));
+        } else if constexpr (ComplexVectorMatrix<T>) {
+            assert(!input.empty() && !input[0].empty());
+            assert(isPowerOfTwo(input.size()));
+            assert(isPowerOfTwo(input[0].size()));
+            assert(input.size() == input[0].size()); // Ensure square matrix
+        }
         const auto start = std::chrono::high_resolution_clock::now();
         computeImpl(input, output, direct);
         const auto end = std::chrono::high_resolution_clock::now();
