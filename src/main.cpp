@@ -24,8 +24,8 @@ int main()
     RecursiveFourier<doubleVector> recursiveFourier;
     IterativeFourier<doubleVector> iterativeFourier;
 
-    recursiveFourier.computeDir(input, output);
-    iterativeFourier.computeDir(input, output2);
+    recursiveFourier.compute(input, output);
+    iterativeFourier.compute(input, output2);
 
     std::cout << "result recursive" << std::endl;
     vector_print(output);
@@ -35,9 +35,8 @@ int main()
     recursiveFourier.executionTime();
     iterativeFourier.executionTime();
 
-    sleep(1); // 1 ms
-    recursiveFourier.computeInv(input, output3);
-    iterativeFourier.computeInv(input, output4);
+    recursiveFourier.compute(input, output3, false);
+    iterativeFourier.compute(input, output4, false);
 
 
     std::cout << "\n\nresult inverse recursive" << std::endl;

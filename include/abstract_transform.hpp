@@ -70,25 +70,14 @@ protected:
     std::chrono::duration<double> time{};
 
     // private virtual interface
-    virtual void computeDirect(const T &input, T &output) = 0;
-    virtual void computeInverse(const T &input, T &output) = 0;
+    virtual void computeImpl(const T &input, T &output, const bool&) = 0;
 
 public:
     // Public non-virtual interface with timing
-    void computeDir(const T &input, T &output) {
+    void compute(const T &input, T &output, const bool& direct=true) {
         assert(isPowerOfTwo(input.size()));
-
         const auto start = std::chrono::high_resolution_clock::now();
-        computeDirect(input, output);
-        const auto end = std::chrono::high_resolution_clock::now();
-        time = end - start;
-    }
-
-    void computeInv(const T &input, T &output) {
-        assert(isPowerOfTwo(input.size()));
-
-        const auto start = std::chrono::high_resolution_clock::now();
-        computeInverse(input, output);
+        computeImpl(input, output, direct);
         const auto end = std::chrono::high_resolution_clock::now();
         time = end - start;
     }

@@ -5,19 +5,9 @@
 
 template <typename T>
 class IterativeFourier final : public BaseTransform<T> {
-    bool direct{true};
+    bool direct{};
 
-    void computeDirect(const T &input, T &output) override {
-        direct = true;
-        this->algorithm(input, output, direct);
-    }
-
-    void computeInverse(const T &input, T &output) override {
-        direct = false;
-        this->algorithm(input, output, direct);
-    }
-
-    void algorithm(const T &input, T &output, const bool& isDirect) {
+    void computeImpl(const T &input, T &output, const bool& isDirect) override{
         direct = isDirect;
         int n = input.size();
         int m = static_cast<int>(log2(n));
@@ -34,11 +24,8 @@ class IterativeFourier final : public BaseTransform<T> {
 
         // Iterative Cooley-Tukey FFT
         for (int j = 1; j <= m; j++) {
-            int d = 1 << j;
-
-            double sign = isDirect ? 1.0 : -1.0;
-            typename T::value_type wn{std::cos(2 * M_PI / d), sign * std::sin(2 * M_PI / d)};
-
+            int d{1 << j};
+            typename T::value_type wn{std::cos(2 * M_PI / d), (direct ? 1.0 : -1.0) * std::sin(2 * M_PI / d)};
 
             for (int k = 0; k < n; k += d) {
                 typename T::value_type w{1, 0};
@@ -52,12 +39,12 @@ class IterativeFourier final : public BaseTransform<T> {
             }
         }
 
+        output = std::move(y);
+
         // Normalize inverse output
         if (!isDirect)
             for (auto &val : output)
                 val /= input.size();
-
-        output = std::move(y);
     }
 
 public:
