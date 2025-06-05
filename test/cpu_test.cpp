@@ -32,10 +32,10 @@ protected:
     IterativeFourier<doubleVector> iterativeFft;
 };
 
-TEST_F(FourierTransformTest, SameOutputForRandomInput)
+TEST_F(FourierTransformTest, SameOutputForRandomInput_Direct)
 {
     // Test for different power-of-two sizes
-    for (size_t size : {2, 4, 8, 16, 32})
+    for (size_t size : {2, 4, 8, 16, 32, 128, 256, 1024})
     {
         const auto input = RandomVectorGenerator::generate<doubleVector>(size);
         doubleVector recursive_output;
@@ -43,6 +43,23 @@ TEST_F(FourierTransformTest, SameOutputForRandomInput)
 
         recursiveFft.compute(input, recursive_output);
         iterativeFft.compute(input, iterative_output);
+
+        EXPECT_TRUE(areEqual(recursive_output, iterative_output))
+            << "FFT implementations produced different results for size " << size;
+    }
+}
+
+TEST_F(FourierTransformTest, SameOutputForRandomInput_Inverse)
+{
+    // Test for different power-of-two sizes
+    for (size_t size : {2, 4, 8, 16, 32, 128, 256, 1024})
+    {
+        const auto input = RandomVectorGenerator::generate<doubleVector>(size);
+        doubleVector recursive_output;
+        doubleVector iterative_output;
+
+        recursiveFft.compute(input, recursive_output, false);
+        iterativeFft.compute(input, iterative_output, false);
 
         EXPECT_TRUE(areEqual(recursive_output, iterative_output))
             << "FFT implementations produced different results for size " << size;
@@ -72,18 +89,39 @@ TEST_F(FourierTransformTest, KnownInput)
 
 TEST_F(FourierTransformTest, ComparePerformance)
 {
-    // Just for observation, not a pass/fail test
-    const auto input = RandomVectorGenerator::generate<doubleVector>(1024);
-    doubleVector recursive_output;
-    doubleVector iterative_output;
+    const auto input_10 = RandomVectorGenerator::generate<doubleVector>(1024);
+    const auto input_15 = RandomVectorGenerator::generate<doubleVector>(32768);
+    const auto input_20 = RandomVectorGenerator::generate<doubleVector>(1048576);
 
-    recursiveFft.compute(input, recursive_output);
-    iterativeFft.compute(input, iterative_output);
+    doubleVector recursive_output_10, recursive_output_15, recursive_output_20;
+    doubleVector iterative_output_10, iterative_output_15, iterative_output_20;
 
-    recursiveFft.executionTime();
-    iterativeFft.executionTime();
+    std::cout << "\n===== Testing size 2^10 =====\n";
+    recursiveFft.compute(input_10, recursive_output_10);
+    iterativeFft.compute(input_10, iterative_output_10);
 
-    EXPECT_TRUE(areEqual(recursive_output, iterative_output));
+    std::cout << "******* recursive 2^10 TIME: " << recursiveFft.getTime() << "*******" << std::endl;
+    std::cout << "******* iterative 2^10 TIME: " << iterativeFft.getTime() << "*******" << std::endl;
+
+    EXPECT_TRUE(areEqual(recursive_output_10, iterative_output_10));
+
+    std::cout << "\n===== Testing size 2^15 =====\n";
+    recursiveFft.compute(input_15, recursive_output_15);
+    iterativeFft.compute(input_15, iterative_output_15);
+
+    std::cout << "******* recursive 2^15 TIME: " << recursiveFft.getTime() << "*******" << std::endl;
+    std::cout << "******* iterative 2^15 TIME: " << iterativeFft.getTime() << "*******" << std::endl;
+
+    EXPECT_TRUE(areEqual(recursive_output_15, iterative_output_15));
+
+    std::cout << "\n===== Testing size 2^20 =====\n";
+    recursiveFft.compute(input_20, recursive_output_20);
+    iterativeFft.compute(input_20, iterative_output_20);
+
+    std::cout << "******* recursive 2^20 TIME: " << recursiveFft.getTime() << "*******" << std::endl;
+    std::cout << "******* iterative 2^20 TIME: " << iterativeFft.getTime() << "*******\n\n" << std::endl;
+
+    EXPECT_TRUE(areEqual(recursive_output_20, iterative_output_20));
 }
 
 // Test that applying FFT followed by inverse FFT returns the original input (within tolerance) for N = 64
