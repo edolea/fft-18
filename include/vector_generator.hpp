@@ -59,12 +59,31 @@ public:
 
     template <ComplexVector T>
     static T generate(int dim, double frequency, double amplitude) {
+        // Helper to check if T is a vector of vectors (matrix)
+        constexpr bool is_matrix =
+            std::is_same_v<T, std::vector<std::vector<std::complex<double>>>> ||
+            std::is_same_v<T, std::vector<std::vector<std::complex<float>>>>;
+
         T input;
-        for (int i = 0; i < dim; ++i)
-        {
-            double value = amplitude * sin(2.0 * M_PI * frequency * i / dim);
-            input.emplace_back(std::complex<typename T::value_type::value_type>(value, 0.0)); // Only real part
+        if constexpr (is_matrix) {
+            input.reserve(dim);
+            for (int i = 0; i < dim; ++i) {
+                input.emplace_back();
+                input.back().reserve(dim);
+                for (int x = 0; x < dim; ++x) {
+                    typename T::value_type::value_type::value_type value = amplitude * sin(2.0 * M_PI * frequency * x / dim) *
+                                  sin(2.0 * M_PI * frequency * i / dim);
+                    input.back().emplace_back(std::complex<typename T::value_type::value_type::value_type>(value, 0.0));
+                }
+            }
+        } else {
+            input.reserve(dim);
+            for (int i = 0; i < dim; ++i) {
+                double value = amplitude * sin(2.0 * M_PI * frequency * i / dim);
+                input.emplace_back(std::complex<typename T::value_type::value_type>(value, 0.0));
+            }
         }
+
         return input;
     }
 };
