@@ -4,10 +4,8 @@
 #include "abstract_transform.hpp"
 
 template <typename T>
-class RecursiveFourier : public BaseTransform<T>
-{
-private:
-    bool direct;
+class RecursiveFourier final : public BaseTransform<T> {
+    bool direct{};
 
     void computeDirect(const T &input, T &output) override
     {

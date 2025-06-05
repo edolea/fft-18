@@ -4,12 +4,10 @@
 #include <vector>
 #include <array>
 #include <complex>
-#include <ostream>
 #include <type_traits>
 #include <concepts>
 
-constexpr bool isPowerOfTwo(size_t n)
-{
+constexpr bool isPowerOfTwo(size_t n) {
     return n > 0 && (n & (n - 1)) == 0; // very efficient bc single bitwise operation
 }
 
@@ -77,24 +75,25 @@ protected:
 
 public:
     // Public non-virtual interface with timing
-    void computeDir(const T &input, T &output)
-    {
+    void computeDir(const T &input, T &output) {
         assert(isPowerOfTwo(input.size()));
 
-        auto start = std::chrono::high_resolution_clock::now();
+        const auto start = std::chrono::high_resolution_clock::now();
         computeDirect(input, output);
-        auto end = std::chrono::high_resolution_clock::now();
+        const auto end = std::chrono::high_resolution_clock::now();
         time = end - start;
     }
 
-    void computeInv(const T &input, T &output)
-    {
+    void computeInv(const T &input, T &output) {
         assert(isPowerOfTwo(input.size()));
+
+        const auto start = std::chrono::high_resolution_clock::now();
         computeInverse(input, output);
+        const auto end = std::chrono::high_resolution_clock::now();
+        time = end - start;
     }
 
-    virtual void executionTime() const
-    {
+    virtual void executionTime() const {
         std::cout << "Abstract FFT time: "
                   << this->time.count() << " seconds" << std::endl;
     }
