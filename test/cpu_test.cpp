@@ -149,50 +149,61 @@ TEST_F(FourierTransformTest, InverseFftKnownInput_N64){
     EXPECT_TRUE(areEqual(output, expected)) << "Iterative IFFT failed on known input";
 }
 
-TEST_F(FourierTransformTest, Test2DFft) {
-    // Test with different sizes
+TEST_F(FourierTransformTest, Compare2DFftImplementations) {
     for (int size : {8, 16, 32}) {
-        // Generate a 2D sinusoidal pattern
         const double frequency = 2.0;
         const double amplitude = 1.0;
 
-        // Generate the 2D test matrix using the specified generator
+        // Generate the 2D test matrix
         const auto input = RandomVectorGenerator::generate<doubleMatrix>(size, frequency, amplitude);
 
         doubleMatrix recursive_output;
         doubleMatrix iterative_output;
 
-        std::cout << "\n===== Testing 2D FFT of size " << size << "x" << size << " =====\n";
+        std::cout << "\n===== Testing 2D FFT Comparison for size " << size << "x" << size << " =====\n";
 
-        // Direct transform
+        // Direct FFT
         recursiveFft2D.compute(input, recursive_output);
         iterativeFft2D.compute(input, iterative_output);
 
-        std::cout << "******* recursive 2D " << size << "x" << size << " TIME: "
-                  << recursiveFft2D.getTime() << "*******" << std::endl;
-        std::cout << "******* iterative 2D " << size << "x" << size << " TIME: "
-                  << iterativeFft2D.getTime() << "*******" << std::endl;
+        std::cout << "Recursive 2D FFT time:  " << recursiveFft2D.getTime() << " seconds\n";
+        std::cout << "Iterative 2D FFT time:  " << iterativeFft2D.getTime() << " seconds\n";
 
-        // Compare outputs from both implementations
+        // Compare both FFT outputs
         EXPECT_TRUE(areEqual2D(recursive_output, iterative_output))
-            << "2D FFT implementations produced different results for size " << size << "x" << size;
+            << "Mismatch between recursive and iterative 2D FFT for size " << size << "x" << size;
+    }
+}
 
-        // Test inverse transform
-        doubleMatrix recursive_inverse;
-        doubleMatrix iterative_inverse;
 
-        //recursiveFft2D.compute(recursive_output, recursive_inverse, false);
-        iterativeFft2D.compute(iterative_output, iterative_inverse, false);
+TEST_F(FourierTransformTest, Inverse2DFftRestoresInput) {
+    for (int size : {8, 16, 32}) {
+        const double frequency = 2.0;
+        const double amplitude = 1.0;
 
-        std::cout << "******* recursive inverse 2D " << size << "x" << size << " TIME: "
-                  << recursiveFft2D.getTime() << "*******" << std::endl;
-        std::cout << "******* iterative inverse 2D " << size << "x" << size << " TIME: "
-                  << iterativeFft2D.getTime() << "*******" << std::endl;
+        // Generate the 2D test matrix
+        const auto input = RandomVectorGenerator::generate<doubleMatrix>(size, frequency, amplitude);
 
-        // Check if applying FFT and then inverse FFT returns the original input
-        EXPECT_TRUE(areEqual2D(recursive_inverse, input))
+        doubleMatrix fft_output;
+        doubleMatrix inverse_recursive, inverse_iterative;
+
+        std::cout << "\n===== Testing 2D FFT + IFFT Round-Trip for size " << size << "x" << size << " =====\n";
+
+        // FFT
+        recursiveFft2D.compute(input, fft_output);
+
+        // IFFT
+        recursiveFft2D.compute(fft_output, inverse_recursive, false);
+        iterativeFft2D.compute(fft_output, inverse_iterative, false);
+
+        std::cout << "Recursive IFFT time:  " << recursiveFft2D.getTime() << " seconds\n";
+        std::cout << "Iterative IFFT time:  " << iterativeFft2D.getTime() << " seconds\n";
+
+        // Compare restored signals to original input
+        EXPECT_TRUE(areEqual2D(inverse_recursive, input))
             << "Recursive 2D FFT+IFFT did not restore input for size " << size << "x" << size;
-        EXPECT_TRUE(areEqual2D(iterative_inverse, input))
+
+        EXPECT_TRUE(areEqual2D(inverse_iterative, input))
             << "Iterative 2D FFT+IFFT did not restore input for size " << size << "x" << size;
     }
 }

@@ -73,6 +73,20 @@ protected:
 
     // private virtual interface
     virtual void computeImpl(const T &input, T &output, const bool&) = 0;
+    template <typename Matrix>
+    Matrix transpose2D(const Matrix &input) {
+        if (input.empty()) return {};
+
+        size_t rows = input.size();
+        size_t cols = input[0].size();
+        Matrix output(cols, typename Matrix::value_type(rows));
+
+        for (size_t i = 0; i < rows; ++i)
+            for (size_t j = 0; j < cols; ++j)
+                output[j][i] = input[i][j];
+
+        return output;
+    }
 
 public:
     // Public non-virtual interface with timing

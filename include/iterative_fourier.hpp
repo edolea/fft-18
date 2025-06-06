@@ -58,44 +58,32 @@ class IterativeFourier final : public BaseTransform<T> {
             int rows = input.size();
             if (rows == 0) return;
 
-            int cols = input[0].size(); // FIXME: togli che c'è l'asertion gia
-            //output.resize(rows * cols);
-            output = input; // Initialize output with input
+            int cols = input[0].size();
 
-            // Process rows first
-            for (int i = 0; i < rows; ++i) {
-                typename T::value_type row_output;
-                compute1D(output[i], row_output, isDirect);
-                output[i] = row_output;
-            }
+            // Step 1: Apply FFT to each row
+            T row_fft(rows);
+            for (int i = 0; i < rows; ++i)
+                compute1D(input[i], row_fft[i], isDirect);
 
-            // Process columns
-            for (int j = 0; j < cols; ++j) {
-                // Extract column
-                typename T::value_type col_input(rows);
-                for (int i = 0; i < rows; ++i) {
-                    col_input[i] = output[i][j];
-                }
+            // Step 2: Transpose
+            T transposed = this->transpose2D(row_fft);
 
-                // FFT on column
-                typename T::value_type col_output;
-                compute1D(col_input, col_output, isDirect);
+            // Step 3: Apply FFT to each (now transposed) row == original columns
+            T col_fft(transposed.size());
+            for (size_t i = 0; i < transposed.size(); ++i)
+                compute1D(transposed[i], col_fft[i], isDirect);
 
-                // Place column back
-                for (int i = 0; i < rows; ++i) {
-                    output[i][j] = col_output[i];
-                }
-            }
+            // Step 4: Transpose back
+            output = this->transpose2D(col_fft);
 
-            // Normalize for inverse FFT - for 2D, we need to divide by total number of elements
+            // Step 5: Normalize for inverse FFT
             if (!isDirect) {
-                for (auto &row : output) {
-                    for (auto &val : row) {
-                        val /= (rows * cols);
-                    }
-                }
+                for (auto &row : output)
+                    for (auto &val : row)
+                        val /= static_cast<double>(rows * cols);
             }
         }
+
     }
 
 public:
