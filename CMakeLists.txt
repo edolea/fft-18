@@ -59,7 +59,7 @@ if(CUDAToolkit_FOUND)
 
     # GPU GoogleTest
     add_executable(gpu_test
-        test/gpu_test.cu
+            test/gpu_test_1D.cu
     )
     target_link_libraries(gpu_test gtest_main cufft)
     set_target_properties(gpu_test PROPERTIES CUDA_ARCHITECTURES 70)

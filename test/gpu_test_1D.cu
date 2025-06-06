@@ -37,7 +37,7 @@ TEST_F(ParallelFourierGPUTest, computeDirDoesNotThrow)
     const auto vec = RandomVectorGenerator::generate<doubleVector>(ParameterClass::N);
     ParallelFourier<doubleVector> parallelFourier(vec);
 
-    EXPECT_NO_THROW(parallelFourier.computeDir());
+    EXPECT_NO_THROW(parallelFourier.compute(vec));
 }
 
 TEST(GPUvsCPU, CompareCPUandGPU)
@@ -48,11 +48,11 @@ TEST(GPUvsCPU, CompareCPUandGPU)
     // CPU computation
     RecursiveFourier<doubleVector> recursiveFft;
     doubleVector cpu_output;
-    recursiveFft.computeDir(input, cpu_output);
+    recursiveFft.compute(input, cpu_output,true);
 
     // GPU computation
     ParallelFourier<doubleVector> gpuFft(input);
-    gpuFft.computeDir();
+    gpuFft.compute(input);
 
     // Try to get the result: adjust this line if your class uses a different member
     const auto &gpu_output = gpuFft.getOutput(); // or gpuFft.getResult() if that's correct
@@ -71,11 +71,11 @@ TEST(GPUvsCPU, ComparePerformanceSmallSizes)
         // CPU computation timing
         RecursiveFourier<doubleVector> recursiveFft;
         doubleVector cpu_output;
-        recursiveFft.computeDir(input, cpu_output);
+        recursiveFft.compute(input, cpu_output);
 
         // GPU computation timing
         ParallelFourier<doubleVector> gpuFft(input);
-        gpuFft.computeDir();
+        gpuFft.compute(input);
 
         // Print performance results (not a test assertion)
         std::cout << "N = " << N
@@ -89,13 +89,12 @@ TEST(INVERSEGPU,  InverseFftRestoresInput_N64) {
     const auto input = RandomVectorGenerator::generate<doubleVector>(N);
     // GPU computation timing
     ParallelFourier<doubleVector> gpuFft(input);
-    gpuFft.computeDir();
+    gpuFft.compute(input);
     auto dir_output = gpuFft.getOutput();
     // Inverse FFT
-    gpuFft.computeInv(dir_output);
+    gpuFft.compute(dir_output, false);
     auto inv_output = gpuFft.getOutput();
     // Check if the inverse FFT restores the original input
     EXPECT_TRUE(areEqual(input, inv_output, 1e-5))
         << "Inverse FFT did not restore the original input!";
-
 }

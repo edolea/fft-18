@@ -3,6 +3,7 @@
 
 #include <abstract_transform.hpp>
 #include "../CUDA_FFT/1D/header.hpp"
+#include "../CUDA_FFT/2D/header.hpp"
 
 template <typename T = doubleVector>
 class ParallelFourier
@@ -15,14 +16,24 @@ protected:
 public:
     explicit ParallelFourier(const T &in) : input(in) {}
 
-    void computeDir()
+    void compute(const T &input_i, const bool &isDirect = true)
     {
-        computationDir(this->input);
+        if constexpr (ComplexVector<T>) {
+            // 1D FFT
+            if (isDirect) {
+                this->computationDir1D(this->input);
+            } else {
+                this->computationInv1D(input_i);
+            }
+        }else {
+           if (isDirect) {this->computationDir2d(this->input);}
+           else {this->computationInv2d(input_i);}
+        }
+
+
+
     }
 
-    void computeInv(const T &inv_input) {
-        computationInv(inv_input);
-    }
 
     virtual void executionTime() const
     {
@@ -45,15 +56,24 @@ public:
     }
 
 private:
-    void computationDir(const T &input)
+    void computationDir1D(const T &input)
     {
         auto result = kernel_direct_fft(input);
         this->output = result.first;
         this->time = result.second;
     }
-    void computationInv(const T &input)
+    void computationInv1D(const T &input)
     {
        this->output  = kernel_inverse_fft(input);
+    }
+    void computationDir2d(const T &input)
+    {
+        auto result = direct_fft_2d(input);
+        this->output = result.first;
+        this->time = result.second;
+    }
+    void computationInv2d(const T &input) {
+        this->output = inverse_fft_2d(input);
     }
 };
 
