@@ -57,15 +57,15 @@ if(CUDAToolkit_FOUND)
     target_compile_options(gpu_exec PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
     target_link_libraries(gpu_exec PRIVATE cufft)
 
-    # GPU GoogleTest
     add_executable(gpu_test
-            test/gpu_test_1D.cu
+            test/gpu_test.cu
     )
     target_link_libraries(gpu_test gtest_main cufft)
     set_target_properties(gpu_test PROPERTIES CUDA_ARCHITECTURES 70)
     target_compile_options(gpu_test PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
     include(GoogleTest)
     gtest_discover_tests(gpu_test)
+
 endif()
 
 

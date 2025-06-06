@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# rm -rf build/
-# mkdir build
+rm -rf build/
+mkdir build
 
 # Navigate to the build directory
 cd build
 
 # Run CMake to generate build files
-# cmake ..
+cmake ..
 
 # Compile the project
 make

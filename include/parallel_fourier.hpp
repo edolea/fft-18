@@ -2,7 +2,6 @@
 #define FFT_ITERATIVE_FOURIER_HPP
 
 #include <abstract_transform.hpp>
-#include "../CUDA_FFT/1D/header.hpp"
 #include "../CUDA_FFT/2D/header.hpp"
 
 template <typename T = doubleVector>
