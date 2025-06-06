@@ -13,7 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include "main_class_2d.hpp"
+
 #define THREAD_PER_BLOCK 1024 // this could be changed depends on GPU
 using namespace std;
 
