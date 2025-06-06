@@ -2,7 +2,7 @@
 #define FFT_ITERATIVE_FOURIER_HPP
 
 #include <abstract_transform.hpp>
-#include "../CUDA_FFT/2D/header.hpp"
+#include "CUDA/cuda_parallel_fft.hpp"
 
 template <typename T = doubleVector>
 class ParallelFourier
