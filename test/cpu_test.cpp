@@ -4,6 +4,8 @@
 #include "iterative_fourier.hpp"
 #include "vector_generator.hpp"
 #include <cmath>
+#include "mpi_wrapper.hpp"
+
 
 // Utility function to compare complex vectors with tolerance
 bool areEqual(const doubleVector &v1, const doubleVector &v2, double tolerance = 1e-10) {
@@ -54,6 +56,73 @@ protected:
     RecursiveFourier<doubleMatrix> recursiveFft2D;
     IterativeFourier<doubleMatrix> iterativeFft2D;
 };
+
+
+TEST(MPIWrapperTest, BasicFunctionality) {
+    // Initialize the MPI wrapper
+    MPIWrapper mpi;
+
+    // Basic info test
+    std::cout << "Process " << mpi.rank() << " out of " << mpi.size() << " started" << std::endl;
+
+    // Test broadcast
+    std::vector<int> data(10);
+    if (mpi.isRoot()) {
+        // Root process initializes the data
+        for (int i = 0; i < 10; i++) {
+            data[i] = i * 10;
+        }
+        std::cout << "Root initialized data" << std::endl;
+    }
+
+    // Broadcast data from root to all processes
+    mpi.broadcast(data.data(), data.size());
+
+    // Verify broadcast worked
+    for (int i = 0; i < 10; i++) {
+        EXPECT_EQ(data[i], i * 10) << "Broadcast data mismatch at index " << i;
+    }
+    std::cout << "Process " << mpi.rank() << ": Broadcast test passed" << std::endl;
+
+    // Test allGather
+    std::vector<int> localData(2);
+    localData[0] = mpi.rank() * 100;
+    localData[1] = mpi.rank() * 100 + 50;
+
+    std::vector<int> allData(2 * mpi.size());
+    mpi.allGather(localData.data(), sizeof(int) * 2,
+                  allData.data(), sizeof(int) * 2);
+
+    // Verify allGather worked
+    for (int i = 0; i < mpi.size(); i++) {
+        EXPECT_EQ(allData[i*2], i * 100) << "AllGather data mismatch for rank " << i;
+        EXPECT_EQ(allData[i*2 + 1], i * 100 + 50) << "AllGather data mismatch for rank " << i;
+    }
+    std::cout << "Process " << mpi.rank() << ": AllGather test passed" << std::endl;
+
+    // Test send/recv
+    if (mpi.size() > 1) {
+        int testValue = 42;
+
+        if (mpi.rank() == 0) {
+            // Send to process 1
+            mpi.send(&testValue, 1, 1, 123);
+            std::cout << "Process 0: Sent value " << testValue << " to process 1" << std::endl;
+        }
+        else if (mpi.rank() == 1) {
+            int receivedValue = 0;
+            mpi.recv(&receivedValue, 1, 0, 123);
+            EXPECT_EQ(receivedValue, 42) << "Received wrong value in point-to-point communication";
+            std::cout << "Process 1: Received value " << receivedValue << " from process 0" << std::endl;
+        }
+    }
+
+    // Barrier to synchronize all processes
+    mpi.barrier();
+    if (mpi.isRoot()) {
+        std::cout << "All MPI tests completed successfully!" << std::endl;
+    }
+}
 
 TEST_F(FourierTransformTest, SameOutputForRandomInput_Direct) {
     // Test for different power-of-two sizes

@@ -8,7 +8,10 @@ project(fft)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-
+# Link libraries
+find_package(Threads REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(MPI REQUIRED)
 
 # Add Google Test using FetchContent
 include(FetchContent)
@@ -28,9 +31,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 # Include directories
-include_directories(
-        include
-)
+include_directories(include)
 
 # add executable
 add_executable(fft
@@ -103,13 +104,12 @@ if(APPLE)
     endif()
 endif()
 
-# Link libraries
-find_package(Threads REQUIRED)
-find_package(OpenMP REQUIRED)
-find_package(MPI REQUIRED)
-
 target_link_libraries(fft ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
 target_link_libraries(fft Threads::Threads)
+
+# CPU Test with MPI support
+target_link_libraries(cpu_test gtest_main ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
+target_include_directories(cpu_test PRIVATE ${MPI_INCLUDE_PATH})
 
 # Set compiler flags
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp")
