@@ -57,7 +57,8 @@ protected:
     IterativeFourier<doubleMatrix> iterativeFft2D;
 };
 
-
+// it always run with 1 process since cmake not configured here,
+// good to check if compiler links OpenMP correctly
 TEST(MPIWrapperTest, BasicFunctionality) {
     // Initialize the MPI wrapper
     MPIWrapper mpi;
@@ -123,6 +124,7 @@ TEST(MPIWrapperTest, BasicFunctionality) {
         std::cout << "All MPI tests completed successfully!" << std::endl;
     }
 }
+
 
 TEST_F(FourierTransformTest, SameOutputForRandomInput_Direct) {
     // Test for different power-of-two sizes

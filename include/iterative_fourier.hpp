@@ -66,14 +66,16 @@ class IterativeFourier final : public BaseTransform<T> {
                 compute1D(input[i], row_fft[i], isDirect);
 
             // Step 2: Transpose
-            T transposed = this->transpose2D(row_fft);
+            //T transposed = this->transpose2D(row_fft);
+            this->transpose2D_more_efficient(row_fft);
 
             // Step 3: Apply FFT to each (now transposed) row == original columns
-            T col_fft(transposed.size());
-            for (size_t i = 0; i < transposed.size(); ++i)
-                compute1D(transposed[i], col_fft[i], isDirect);
+            T col_fft(row_fft.size());
+            for (size_t i = 0; i < row_fft.size(); ++i)
+                compute1D(row_fft[i], col_fft[i], isDirect);
 
             // Step 4: Transpose back
+            // TODO: used more efficient transpose here also
             output = this->transpose2D(col_fft);
 
             // Step 5: Normalize for inverse FFT
