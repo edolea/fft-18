@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0074 NEW)  # policy needed for openMP homebrew paths
 
 # Project name
-project(fft)
+project(FFT_HPC)
 
 # C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -33,8 +33,8 @@ include_directories(
 )
 
 # add executable
-add_executable(fft
-        src/main.cpp
+add_executable(main_cpu
+        src/cpu_main.cpp
 )
 
 # testing
@@ -59,6 +59,7 @@ if(CUDAToolkit_FOUND)
 
     add_executable(gpu_test
             test/gpu_test.cu
+            
     )
     target_link_libraries(gpu_test gtest_main cufft)
     set_target_properties(gpu_test PROPERTIES CUDA_ARCHITECTURES 70)
@@ -108,8 +109,8 @@ find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(MPI REQUIRED)
 
-target_link_libraries(fft ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
-target_link_libraries(fft Threads::Threads)
+target_link_libraries(main_cpu ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(main_cpu Threads::Threads)
 
 # Set compiler flags
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp")

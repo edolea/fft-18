@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <concepts>
 #include <chrono>
+#include <cassert>
 
 constexpr bool isPowerOfTwo(size_t n) {
     return n > 0 && (n & (n - 1)) == 0; // very efficient bc single bitwise operation

@@ -12,6 +12,3 @@ cmake ..
 
 # Compile the project
 make
-
-# Run the resulting executable
-# ./FFTProject
