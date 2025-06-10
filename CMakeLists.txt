@@ -75,10 +75,15 @@ if(CUDAToolkit_FOUND)
 endif()
 
 
-# CPU GoogleTest
-target_link_libraries(cpu_test gtest_main)
+# CPU (sequential) GoogleTest
+target_link_libraries(cpu_test gtest_main MPI::MPI_CXX)
 include(GoogleTest)
 gtest_discover_tests(cpu_test)
+
+# CPU (MPI) GoogleTest
+target_link_libraries(cpu_mpi_test gtest_main MPI::MPI_CXX)
+include(GoogleTest)
+gtest_discover_tests(cpu_mpi_test)
 
 
 # include_directories(${MPI_INCLUDE_PATH})

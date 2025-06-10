@@ -12,10 +12,12 @@ cmake ..
 # Compile the project
 make
 
-# Run the resulting executable
+# Run the resulting executables
 ./main_cpu
-./test_cpu
-./test_gpu
+./cpu_test
 
-
+# Only run gpu_test if it exists
+if [ -f ./gpu_test ]; then
+    ./gpu_test
+fi
 
