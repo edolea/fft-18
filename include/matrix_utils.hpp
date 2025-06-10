@@ -3,10 +3,10 @@
 
 #include "abstract_transform.hpp"
 
-template <ComplexMatrix T>
+template <ComplexVectorMatrix T>
 class MatrixUtils {
 public:
-    // Transpose function (you already have this in CUDA code)
+    // Transpose function
     static T transpose(const T& matrix) {
         if (matrix.empty() || matrix[0].empty()) {
             return T{};

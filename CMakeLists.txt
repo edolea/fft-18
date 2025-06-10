@@ -8,7 +8,10 @@ project(FFT_HPC)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-
+# Link libraries
+find_package(Threads REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(MPI REQUIRED)
 
 # Add Google Test using FetchContent
 include(FetchContent)
@@ -28,9 +31,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 # Include directories
-include_directories(
-        include
-)
+include_directories(include)
 
 # add executable
 add_executable(main_cpu
@@ -40,6 +41,11 @@ add_executable(main_cpu
 # testing
 add_executable(cpu_test
         test/cpu_test.cpp
+)
+
+# Add this after your cpu_test executable declaration
+add_executable(cpu_mpi_test
+    test/cpu_mpi_test.cpp
 )
 
 
@@ -59,7 +65,6 @@ if(CUDAToolkit_FOUND)
 
     add_executable(gpu_test
             test/gpu_test.cu
-            
     )
     target_link_libraries(gpu_test gtest_main cufft)
     set_target_properties(gpu_test PROPERTIES CUDA_ARCHITECTURES 70)
@@ -109,8 +114,8 @@ find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(MPI REQUIRED)
 
-target_link_libraries(main_cpu ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
-target_link_libraries(main_cpu Threads::Threads)
+target_link_libraries(fft ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(fft Threads::Threads)
 
 # Set compiler flags
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp")

@@ -74,7 +74,9 @@ protected:
 
     // private virtual interface
     virtual void computeImpl(const T &input, T &output, const bool&) = 0;
-    template <typename Matrix>
+
+    // TODO: eliminate old inefficient transpose
+    template <ComplexVectorMatrix Matrix>
     Matrix transpose2D(const Matrix &input) {
         if (input.empty()) return {};
 
@@ -87,6 +89,16 @@ protected:
                 output[j][i] = input[i][j];
 
         return output;
+    }
+
+    template <ComplexVectorMatrix Matrix>
+    void transpose2D_more_efficient(Matrix &input) {
+        if (input.empty() || input.size() != input[0].size()) return; // Ensure square matrix
+
+        const size_t n = input.size();
+        for (size_t i = 0; i < n; ++i)
+            for (size_t j = i + 1; j < n; ++j)
+                std::swap(input[i][j], input[j][i]);
     }
 
 public:
