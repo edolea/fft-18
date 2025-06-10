@@ -114,8 +114,8 @@ find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(MPI REQUIRED)
 
-target_link_libraries(fft ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
-target_link_libraries(fft Threads::Threads)
+target_link_libraries(main_cpu ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
+target_link_libraries(main_cpu Threads::Threads)
 
 # Set compiler flags
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp")
