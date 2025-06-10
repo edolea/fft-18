@@ -24,10 +24,7 @@ std::vector<size_t> initialize_vector(size_t max_size) {
 int main()
 {
     std::vector<std::pair<int, double>> time_recursive_fft,time_iterative_fft;
-    std::vector<size_t> n_list = initialize_vector(size);
-
-
-    for (size_t n : n_list) {
+    for (const std::vector<size_t> n_list = initialize_vector(size); size_t n : n_list) {
         const auto input = RandomVectorGenerator::generate<doubleVector>(n);
         doubleVector output_recursive;
         doubleVector output_iterative;
