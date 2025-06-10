@@ -14,6 +14,8 @@ make
 
 # Run the resulting executable
 ./main_cpu
+./test_cpu
+./test_gpu
 
 
 
