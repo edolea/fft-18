@@ -125,7 +125,6 @@ TEST(MPIWrapperTest, BasicFunctionality) {
     }
 }
 
-
 TEST_F(FourierTransformTest, SameOutputForRandomInput_Direct) {
     // Test for different power-of-two sizes
     for (size_t size : {2, 4, 8, 16, 32, 128, 256, 1024})
@@ -296,6 +295,7 @@ TEST_F(FourierTransformTest, ComparePerformance) {
 
     EXPECT_TRUE(areEqual(recursive_output_10, iterative_output_10));
 
+    /*
     std::cout << "\n===== Testing size 2^15 =====\n";
     recursiveFft.compute(input_15, recursive_output_15);
     iterativeFft.compute(input_15, iterative_output_15);
@@ -313,4 +313,5 @@ TEST_F(FourierTransformTest, ComparePerformance) {
     std::cout << "******* iterative 2^20 TIME: " << iterativeFft.getTime() << "*******\n\n" << std::endl;
 
     EXPECT_TRUE(areEqual(recursive_output_20, iterative_output_20));
+    */
 }

@@ -51,6 +51,15 @@ class MPIIterativeFourier final : public BaseTransform<T> {
             chunk_size * sizeof(typename VectorType::value_type)
         );
 
+        if (mpi_.rank() == 0) {
+            std::cout << "==***==***== --MPI-- Bit-reversed output: [";
+            for (size_t i = 0; i < output.size(); ++i) {
+                std::cout << "(" << output[i].real() << "," << output[i].imag() << "i)";
+                if (i < output.size() - 1) std::cout << ", ";
+            }
+            std::cout << "]" << std::endl;
+        }
+
         // Iterative Cooley-Tukey FFT - executed by all processes on distributed data
         for (int s = 1; s <= m; s++) {
             int m_s = 1 << s; // 2^s
@@ -196,8 +205,6 @@ class MPIIterativeFourier final : public BaseTransform<T> {
     }
 
 public:
-    MPIIterativeFourier() = default;
-
     void executionTime() const override {
         if (mpi_.isRoot()) {  // Only root process reports time
             std::cout << "MPI Iterative " << (direct ? "Direct" : "Inverse") << " ";

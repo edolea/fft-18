@@ -67,3 +67,42 @@ public:
 };
 
 #endif // FFT_MPI_WRAPPER_HPP
+
+/*
+// Singleton pattern to provide a global MPIWrapper instance
+inline MPIWrapper& GetSharedMPI() {
+    static MPIWrapper instance;
+    return instance;
+}
+
+
+
+class MPIStream {
+private:
+    MPIWrapper& mpi_;
+    std::ostream& stream_;
+
+public:
+    MPIStream(MPIWrapper& mpi, std::ostream& stream = std::cout)
+        : mpi_(mpi), stream_(stream) {}
+
+    template<typename T>
+    MPIStream& operator<<(const T& value) {
+        if (mpi_.isRoot()) {
+            stream_ << value;
+        }
+        return *this;
+    }
+
+    // Special handling for manipulators like std::endl
+    MPIStream& operator<<(std::ostream& (*manip)(std::ostream&)) {
+        if (mpi_.isRoot()) {
+            stream_ << manip;
+        }
+        return *this;
+    }
+};
+
+// Global MPI-aware output stream that only prints on rank 0
+inline MPIStream mpi_cout(GetSharedMPI());
+*/
