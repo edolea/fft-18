@@ -23,13 +23,6 @@ class IterativeFourier final : public BaseTransform<T> {
             output[j] = input[i];
         }
 
-        std::cout << "==***==***== Bit-reversed output: [";
-        for (size_t i = 0; i < output.size(); ++i) {
-            std::cout << "(" << output[i].real() << "," << output[i].imag() << "i)";
-            if (i < output.size() - 1) std::cout << ", ";
-        }
-        std::cout << "]" << std::endl;
-
         // Iterative Cooley-Tukey FFT
         for (int j = 1; j <= m; j++) {
             int d{1 << j};

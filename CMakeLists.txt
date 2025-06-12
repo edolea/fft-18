@@ -119,6 +119,18 @@ find_package(MPI REQUIRED)
 target_link_libraries(main_cpu ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
 target_link_libraries(main_cpu Threads::Threads)
 
+# executable for MPI main
+add_executable(mpi_main src/mpi_main.cpp)
+target_link_libraries(mpi_main ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
+
+add_custom_target(run_mpi_main
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4
+    ${MPIEXEC_PREFLAGS} $<TARGET_FILE:mpi_main> ${MPIEXEC_POSTFLAGS}
+    DEPENDS mpi_main
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Running mpi_main with 4 MPI processes"
+)
+
 # Link with MPI and other libraries
 #[[
 target_link_libraries(cpu_mpi_test gtest ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
