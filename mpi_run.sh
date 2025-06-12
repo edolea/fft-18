@@ -19,4 +19,4 @@ cmake ..
 # Compile the project
 make
 
-mpiexec -n 4 ./mpi_main 2
+mpiexec -n 2 ./mpi_main 2 8

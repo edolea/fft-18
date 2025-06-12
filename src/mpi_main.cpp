@@ -1,143 +1,153 @@
-// main.cpp
 #include <mpi.h>
 #include <iostream>
 #include <vector>
 #include <complex>
 #include <cmath>
-#include <cassert>
+#include "iterative_fourier.hpp"
 #include "mpi_iterative_fourier.hpp"
-#include "iterative_fourier.hpp"  // iterative FFT
 
-// Helper comparison for complex vectors/matrices
+using complexDouble = std::complex<double>;
+using doubleVector = std::vector<complexDouble>;
+using doubleMatrix = std::vector<doubleVector>;
+
+// Generate test data for FFT
 template<typename T>
-bool approxEqual(const T &a, const T &b, double eps = 1e-6) {
-    if constexpr (std::is_same_v<T, std::vector<std::complex<double>>>) {
-        if (a.size() != b.size()) {
-            std::cerr << "Error in MPIParallelFourier: size mismatch 1D" << std::endl;
-            return false;
+void generateTestData(T& data, int n) {
+    if constexpr (ComplexVector<T>) {
+        data.resize(n);
+        for (int i = 0; i < n; i++) {
+            double real = std::cos(2 * M_PI * i / n);
+            double imag = std::sin(2 * M_PI * i / n);
+            data[i] = {real, imag};
         }
-        for (size_t i = 0; i < a.size(); ++i)
-            if (std::abs(a[i] - b[i]) > eps) {
-                std::cerr << "ERROOOOOR: a[" << i << "] = "<< a[i] << " - b[" << i << "] = " << b[i] << "< toll " << eps << std::endl;
-                return false;
+    } else if constexpr (ComplexVectorMatrix<T>) {
+        data.resize(n, doubleVector(n));
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                double real = std::cos(2 * M_PI * (i + j) / n);
+                double imag = std::sin(2 * M_PI * (i + j) / n);
+                data[i][j] = {real, imag};
             }
-        return true;
-    } else {
-        // matrix
-        if (a.size() != b.size()) {
-            std::cerr << "Error in MPIParallelFourier: size mismatch 2D" << std::endl;
-            return false;
         }
-        for (size_t i = 0; i < a.size(); ++i) {
-            if (a[i].size() != b[i].size()) return false;
-            for (size_t j = 0; j < a[i].size(); ++j)
-                if (std::abs(a[i][j] - b[i][j]) > eps) return false;
-        }
-        return true;
     }
 }
 
-int main(int argc, char *argv[]) {
+// Validate FFT results
+template<typename T>
+bool compareResults(const T& parallel, const T& sequential, double tolerance = 1e-10) {
+    if constexpr (ComplexVector<T>) {
+        for (size_t i = 0; i < parallel.size(); i++) {
+            if (std::abs(parallel[i] - sequential[i]) > tolerance)
+                return false;
+        }
+    } else if constexpr (ComplexVectorMatrix<T>) {
+        for (size_t i = 0; i < parallel.size(); i++) {
+            for (size_t j = 0; j < parallel[i].size(); j++) {
+                if (std::abs(parallel[i][j] - sequential[i][j]) > tolerance)
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
+int main(int argc, char** argv) {
+    // Initialize MPI
     MPI_Init(&argc, &argv);
 
-    int rank;
+    int rank, world_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    if (argc < 2) {
-        if (rank == 0)
-            std::cerr << "Usage: " << argv[0] << " <dim (1 or 2)> [N]" << std::endl;
+    // Parse command line arguments
+    if (argc < 3) {
+        if (rank == 0) std::cerr << "Usage: " << argv[0] << " <dimension (1|2)> <size>" << std::endl;
         MPI_Finalize();
         return 1;
     }
 
-    int dim = std::stoi(argv[1]);
-    bool direct = true;
+    int dimension = std::atoi(argv[1]);
+    int n = std::atoi(argv[2]);
 
-    if (dim == 1) {
-        int N = (argc >= 3 ? std::stoi(argv[2]) : 8);
-        using C = std::complex<double>;
-        std::vector<C> data;
+    // Validate inputs
+    if (!isPowerOfTwo(n)) {
+        if (rank == 0) std::cerr << "Error: Size must be a power of 2" << std::endl;
+        MPI_Finalize();
+        return 1;
+    }
+
+    // number of processors multiple of 2
+    if (n % world_size != 0) {
+        if (rank == 0) std::cerr << "Error: Size must be divisible by number of processes" << std::endl;
+        MPI_Finalize();
+        return 1;
+    }
+
+    // 1D FFT
+    if (dimension == 1) {
+        doubleVector input, parallel_output, sequential_output;
+
+        // Only rank 0 initializes data
         if (rank == 0) {
-            data.resize(N);
-            for (int i = 0; i < N; ++i)
-                data[i] = C(static_cast<double>(i), 0.0);
+            generateTestData(input, n);
+            parallel_output.resize(n);
+            sequential_output.resize(n);
         }
-        MPI_Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        if (rank != 0) data.resize(N);
-        MPI_Bcast(data.data(), N, MPI_CXX_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD);
+        // resize for all
 
-        // Iterative FFT
-        IterativeFourier<std::vector<C>> iterative;
-        std::vector<C> iterResult;
-        iterative.compute(data, iterResult, direct);
+        // Create parallel FFT instance (just once)
+        MpiIterativeFourier<doubleVector> parallelFFT(MPI_COMM_WORLD);
 
-        // MPI Parallel FFT
-        MPIParallelFourier<std::vector<C>> parallel;
-        std::vector<C> parResult;
-        parallel.compute(data, parResult, direct);
+        // Run parallel FFT (compute called once)
+        parallelFFT.compute(input, parallel_output, true);
 
+        // On rank 0, also run sequential version and compare
         if (rank == 0) {
-            std::cout << "1D FFT Iterative result:" << std::endl;
-            for (const auto &c : iterResult) std::cout << c << std::endl;
-            std::cout << "1D FFT MPI-Parallel result:" << std::endl;
-            for (const auto &c : parResult) std::cout << c << std::endl;
+            IterativeFourier<doubleVector> sequentialFFT;
+            sequentialFFT.compute(input, sequential_output, true);
 
-            bool same = approxEqual(iterResult, parResult);
-            std::cout << "Outputs are " << (same ? "consistent" : "different") << std::endl;
+            bool match = compareResults(parallel_output, sequential_output);
+
+            std::cout << "1D FFT with N=" << n << ", processes=" << world_size << std::endl;
+            sequentialFFT.executionTime();
+            parallelFFT.executionTime();
+            std::cout << "Results match: " << (match ? "Yes" : "No") << std::endl;
+            std::cout << "************ Speedup: " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << "x  ***************" << std::endl;
         }
-        iterative.executionTime();
-        parallel.executionTime();
+    }
+    // 2D FFT
+    else if (dimension == 2) {
+        doubleMatrix input, parallel_output, sequential_output;
 
-    } else if (dim == 2) {
-        int N = (argc >= 3 ? std::stoi(argv[2]) : 4);
-        using C = std::complex<double>;
-        std::vector<C> flat;
+        // Only rank 0 initializes data
         if (rank == 0) {
-            flat.resize(N * N);
-            for (int i = 0; i < N; ++i)
-                for (int j = 0; j < N; ++j)
-                    flat[i * N + j] = C(static_cast<double>(i), static_cast<double>(j));
+            generateTestData(input, n);
+            parallel_output.resize(n, doubleVector(n));
+            sequential_output.resize(n, doubleVector(n));
         }
-        MPI_Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        if (rank != 0) flat.resize(N * N);
-        MPI_Bcast(flat.data(), N * N, MPI_CXX_DOUBLE_COMPLEX, 0, MPI_COMM_WORLD);
 
-        std::vector<std::vector<C>> data(N, std::vector<C>(N));
-        for (int i = 0; i < N; ++i)
-            for (int j = 0; j < N; ++j)
-                data[i][j] = flat[i * N + j];
+        // Create parallel FFT instance (just once)
+        MpiIterativeFourier<doubleMatrix> parallelFFT(MPI_COMM_WORLD);
 
-        // Iterative 2D FFT
-        IterativeFourier<std::vector<std::vector<C>>> iterative2;
-        std::vector<std::vector<C>> iterMat;
-        iterative2.compute(data, iterMat, direct);
+        // Run parallel FFT (compute called once)
+        parallelFFT.compute(input, parallel_output, true);
 
-        // MPI Parallel 2D FFT
-        MPIParallelFourier<std::vector<std::vector<C>>> parallel2;
-        std::vector<std::vector<C>> parMat;
-        parallel2.compute(data, parMat, direct);
-
+        // On rank 0, also run sequential version and compare
         if (rank == 0) {
-            std::cout << "2D FFT Iterative result:" << std::endl;
-            for (const auto &row : iterMat) {
-                for (const auto &c : row) std::cout << c << " ";
-                std::cout << std::endl;
-            }
-            std::cout << "2D FFT MPI-Parallel result:" << std::endl;
-            for (const auto &row : parMat) {
-                for (const auto &c : row) std::cout << c << " ";
-                std::cout << std::endl;
-            }
+            IterativeFourier<doubleMatrix> sequentialFFT;
+            sequentialFFT.compute(input, sequential_output, true);
 
-            bool same = approxEqual(iterMat, parMat);
-            std::cout << "Outputs are " << (same ? "consistent" : "different") << std::endl;
+            bool match = compareResults(parallel_output, sequential_output);
+
+            std::cout << "2D FFT with N=" << n << ", processes=" << world_size << std::endl;
+            sequentialFFT.executionTime();
+            parallelFFT.executionTime();
+            std::cout << "Results match: " << (match ? "Yes" : "No") << std::endl;
+            std::cout << "Speedup: " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << "x" << std::endl;
         }
-        iterative2.executionTime();
-        parallel2.executionTime();
-
-    } else {
-        if (rank == 0)
-            std::cerr << "Invalid dimension: use 1 or 2" << std::endl;
+    }
+    else {
+        if (rank == 0) std::cerr << "Error: Dimension must be 1 or 2" << std::endl;
     }
 
     MPI_Finalize();
