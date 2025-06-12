@@ -7,7 +7,7 @@ mkdir build_mpi
 # Navigate to the build directory
 cd build_mpi || exit 1
 
-# Only set compilers on Apple (macOS) -- needed
+# Only set compilers on Apple (macOS) -- needed to run MPI
 if [[ "$(uname)" == "Darwin" ]]; then
     export CC=/opt/homebrew/bin/gcc-15
     export CXX=/opt/homebrew/bin/g++-15
@@ -19,4 +19,4 @@ cmake ..
 # Compile the project
 make
 
-mpiexec -n 4 ./mpi_main 1
+mpiexec -n 4 ./mpi_main 2

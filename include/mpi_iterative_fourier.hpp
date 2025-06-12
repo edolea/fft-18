@@ -69,7 +69,7 @@ private:
         assert(N % size == 0);
         size_t rowsPerProc = N / size;
 
-        double sign = direct ? -1.0 : 1.0;
+        double sign = direct ? 1.0 : -1.0;
         double norm = direct ? 1.0 : 1.0 / static_cast<double>(N);
 
         // 1) Row-wise FFT
