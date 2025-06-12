@@ -25,7 +25,7 @@ class IterativeFourier final : public BaseTransform<T> {
 
         // Iterative Cooley-Tukey FFT
         for (int j = 1; j <= m; j++) {
-            int d{1 << j};
+            int d{1 << j}; // 2^j
             typename VectorType::value_type wn{std::cos(2 * M_PI / d), (isDirect ? 1.0 : -1.0) * std::sin(2 * M_PI / d)};
 
             for (int k = 0; k < n; k += d) {
@@ -89,6 +89,13 @@ class IterativeFourier final : public BaseTransform<T> {
     }
 
 public:
+    void compute(const T &input, T &output, const bool& direct=true) {
+        const auto start = std::chrono::high_resolution_clock::now();
+        computeImpl(input, output, direct);
+        const auto end = std::chrono::high_resolution_clock::now();
+        this->time = end - start;
+    }
+
     void executionTime() const override {
         std::cout << "Iterative " << (direct ? "Direct" : "Inverse") << " ";
 
