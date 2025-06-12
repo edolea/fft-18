@@ -122,6 +122,7 @@ target_link_libraries(main_cpu Threads::Threads)
 # executable for MPI main
 add_executable(mpi_main src/mpi_main.cpp)
 target_link_libraries(mpi_main ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
+#[[
 
 add_custom_target(run_mpi_main
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4
@@ -130,6 +131,7 @@ add_custom_target(run_mpi_main
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Running mpi_main with 4 MPI processes"
 )
+]]
 
 # Link with MPI and other libraries
 #[[
