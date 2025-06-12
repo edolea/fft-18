@@ -1,136 +1,113 @@
-#ifndef FFT_MPI_PARALLEL_FOURIER_HPP
-#define FFT_MPI_PARALLEL_FOURIER_HPP
+#ifndef MPI_ITERATIVE_FOURIER_HPP
+#define MPI_ITERATIVE_FOURIER_HPP
 
-#include <mpi.h>
 #include "abstract_transform.hpp"
-#include <vector>
-#include <complex>
-#include <cmath>
-#include <cassert>
-
-// MPI-based iterative FFT implementation for 1D and 2D complex data
-// Implements the BaseTransform interface (computeImpl method)
-// Supports power-of-two sizes and assumes the number of processes divides the dimensions.
+#include <mpi.h>
 
 template <typename T>
-requires ComplexVector<T> || ComplexVectorMatrix<T>
-class MPIParallelFourier : public BaseTransform<T> {
-protected:
-    void computeImpl(const T &input, T &output, const bool &direct) override {
+class IterativeFourier final : public BaseTransform<T> {
+    bool direct{};  // only used for printing execution time
+
+    // Helper method for 1D FFT computation
+    template <ComplexVector VectorType>
+    void compute1D(const VectorType &input, VectorType &output, bool isDirect) {
+        int n = input.size();
+        int m = static_cast<int>(log2(n));
+        output.resize(n);
+
+        // Bit-reversal permutation
+        for (int i = 0; i < n; i++) {
+            int j = 0;
+            for (int k = 0; k < m; k++)
+                if (i & (1 << k))
+                    j |= (1 << (m - 1 - k));
+            output[j] = input[i];
+        }
+
+        // Iterative Cooley-Tukey FFT
+        for (int j = 1; j <= m; j++) {
+            int d{1 << j}; // 2^j
+            typename VectorType::value_type wn{std::cos(2 * M_PI / d), (isDirect ? 1.0 : -1.0) * std::sin(2 * M_PI / d)};
+
+            for (int k = 0; k < n; k += d) {
+                typename VectorType::value_type w{1, 0};
+                for (int i = 0; i < d / 2; i++) {
+                    typename VectorType::value_type t = w * output[k + i + d / 2];
+                    typename VectorType::value_type u = output[k + i];
+                    output[k + i] = u + t;
+                    output[k + i + d / 2] = u - t;
+                    w = w * wn;
+                }
+            }
+        }
+
+        // Normalize inverse output (only for 1D case - 2D case is handled separately)
+        if (!isDirect && std::is_same_v<VectorType, T>)
+            for (auto &val : output)
+                val /= n;
+    }
+
+    void computeImpl(const T &input, T &output, const bool& isDirect) override {
+        direct = isDirect;
+
+        // 1D FFT implementation
         if constexpr (ComplexVector<T>) {
-            mpi_fft1D(input, output, direct);
+            compute1D(input, output, isDirect);
+        }
+        // 2D FFT implementation using row-column decomposition
+        else if constexpr (ComplexVectorMatrix<T>) {
+            int rows = input.size();
+            if (rows == 0) return;
+
+            int cols = input[0].size();
+
+            // Step 1: Apply FFT to each row
+            T row_fft(rows);
+            for (int i = 0; i < rows; ++i)
+                compute1D(input[i], row_fft[i], isDirect);
+
+            // Step 2: Transpose
+            //T transposed = this->transpose2D(row_fft);
+            this->transpose2D_more_efficient(row_fft);
+
+            // Step 3: Apply FFT to each (now transposed) row == original columns
+            T col_fft(row_fft.size());
+            for (size_t i = 0; i < row_fft.size(); ++i)
+                compute1D(row_fft[i], col_fft[i], isDirect);
+
+            // Step 4: Transpose back
+            // TODO: used more efficient transpose here also
+            output = this->transpose2D(col_fft);
+
+            // Step 5: Normalize for inverse FFT
+            if (!isDirect) {
+                for (auto &row : output)
+                    for (auto &val : row)
+                        val /= static_cast<double>(rows * cols);
+            }
+        }
+
+    }
+
+public:
+    void compute(const T &input, T &output, const bool& direct=true) {
+        const auto start = std::chrono::high_resolution_clock::now();
+        computeImpl(input, output, direct);
+        const auto end = std::chrono::high_resolution_clock::now();
+        this->time = end - start;
+    }
+
+    void executionTime() const override {
+        std::cout << "Iterative " << (direct ? "Direct" : "Inverse") << " ";
+
+        if constexpr (ComplexVector<T>) {
+            std::cout << "1D";
         } else if constexpr (ComplexVectorMatrix<T>) {
-            mpi_fft2D(input, output, direct);
-        }
-    }
-
-private:
-    using C = std::complex<double>;
-    static constexpr double PI = std::acos(-1);
-
-    void mpi_fft1D(const std::vector<C> &in, std::vector<C> &out, bool direct) {
-        int rank, size;
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-        size_t N = in.size();
-        assert(N % size == 0);
-        size_t chunk = N / size;
-        size_t start = rank * chunk;
-
-        double sign = direct ? 1.0 : -1.0;
-        double norm = direct ? 1.0 : 1.0 / static_cast<double>(N);
-        out.resize(N);
-
-        std::vector<C> localBuf(chunk);
-        for (size_t k = 0; k < chunk; ++k) {
-            C sum{0.0, 0.0};
-            size_t globalK = start + k;
-            for (size_t n = 0; n < N; ++n) {
-                double angle = sign * 2.0 * PI * static_cast<double>(globalK) * static_cast<double>(n) / static_cast<double>(N);
-                sum += in[n] * C(std::cos(angle), std::sin(angle));
-            }
-            localBuf[k] = sum * norm;
+            std::cout << "2D";
         }
 
-        MPI_Allgather(
-            localBuf.data(), static_cast<int>(chunk), MPI_CXX_DOUBLE_COMPLEX,
-            out.data(),      static_cast<int>(chunk), MPI_CXX_DOUBLE_COMPLEX,
-            MPI_COMM_WORLD
-        );
-    }
-
-    void mpi_fft2D(const std::vector<std::vector<C>> &in, std::vector<std::vector<C>> &out, bool direct) {
-        int rank, size;
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-        size_t N = in.size();
-        assert(N % size == 0);
-        size_t rowsPerProc = N / size;
-
-        double sign = direct ? 1.0 : -1.0;
-        double norm = direct ? 1.0 : 1.0 / static_cast<double>(N);
-
-        // 1) Row-wise FFT
-        std::vector<C> localRowBuf(rowsPerProc * N);
-        for (size_t i = 0; i < rowsPerProc; ++i) {
-            size_t globalRow = rank * rowsPerProc + i;
-            for (size_t k = 0; k < N; ++k) {
-                C sum{0.0, 0.0};
-                for (size_t n = 0; n < N; ++n) {
-                    double angle = sign * 2.0 * PI * static_cast<double>(k) * static_cast<double>(n) / static_cast<double>(N);
-                    sum += in[globalRow][n] * C(std::cos(angle), std::sin(angle));
-                }
-                localRowBuf[i * N + k] = sum * norm;
-            }
-        }
-
-        std::vector<C> allRowBuf(N * N);
-        MPI_Allgather(
-            localRowBuf.data(), static_cast<int>(rowsPerProc * N), MPI_CXX_DOUBLE_COMPLEX,
-            allRowBuf.data(),   static_cast<int>(rowsPerProc * N), MPI_CXX_DOUBLE_COMPLEX,
-            MPI_COMM_WORLD
-        );
-
-        // Reconstruct full row-transformed matrix
-        std::vector<std::vector<C>> rowMat(N, std::vector<C>(N));
-        for (size_t i = 0; i < N; ++i)
-            for (size_t k = 0; k < N; ++k)
-                rowMat[i][k] = allRowBuf[i * N + k];
-
-        // Transpose for column FFT
-        auto transposed = this->transpose2D(rowMat);
-
-        // 2) Column-wise FFT (on transposed rows)
-        std::vector<C> localColBuf(rowsPerProc * N);
-        for (size_t i = 0; i < rowsPerProc; ++i) {
-            size_t globalRow = rank * rowsPerProc + i;
-            for (size_t k = 0; k < N; ++k) {
-                C sum{0.0, 0.0};
-                for (size_t n = 0; n < N; ++n) {
-                    double angle = sign * 2.0 * PI * static_cast<double>(k) * static_cast<double>(n) / static_cast<double>(N);
-                    sum += transposed[globalRow][n] * C(std::cos(angle), std::sin(angle));
-                }
-                localColBuf[i * N + k] = sum * norm;
-            }
-        }
-
-        std::vector<C> allColBuf(N * N);
-        MPI_Allgather(
-            localColBuf.data(), static_cast<int>(rowsPerProc * N), MPI_CXX_DOUBLE_COMPLEX,
-            allColBuf.data(),   static_cast<int>(rowsPerProc * N), MPI_CXX_DOUBLE_COMPLEX,
-            MPI_COMM_WORLD
-        );
-
-        // Reconstruct and transpose back
-        std::vector<std::vector<C>> colMat(N, std::vector<C>(N));
-        for (size_t i = 0; i < N; ++i)
-            for (size_t k = 0; k < N; ++k)
-                colMat[i][k] = allColBuf[i * N + k];
-
-        out = this->transpose2D(colMat);
+        std::cout << " FFT time: " << this->time.count() << " seconds" << std::endl;
     }
 };
 
-#endif // FFT_MPI_PARALLEL_FOURIER_HPP
+#endif //MPI_ITERATIVE_FOURIER_HPP
