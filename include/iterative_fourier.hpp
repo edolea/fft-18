@@ -10,8 +10,8 @@ class IterativeFourier final : public BaseTransform<T> {
     // Helper method for 1D FFT computation
     template <ComplexVector VectorType>
     void compute1D(const VectorType &input, VectorType &output, bool isDirect) {
-        int n = input.size();
-        int m = static_cast<int>(log2(n));
+        const int n = input.size();
+        const int m = static_cast<int>(log2(n));
         output.resize(n);
 
         // Bit-reversal permutation
@@ -25,7 +25,7 @@ class IterativeFourier final : public BaseTransform<T> {
 
         // Iterative Cooley-Tukey FFT
         for (int j = 1; j <= m; j++) {
-            int d{1 << j}; // 2^j
+            const int d{1 << j}; // 2^j
             typename VectorType::value_type wn{std::cos(2 * M_PI / d), (isDirect ? 1.0 : -1.0) * std::sin(2 * M_PI / d)};
 
             for (int k = 0; k < n; k += d) {
@@ -56,8 +56,6 @@ class IterativeFourier final : public BaseTransform<T> {
         // 2D FFT implementation using row-column decomposition
         else if constexpr (ComplexVectorMatrix<T>) {
             int rows = input.size();
-            if (rows == 0) return;
-
             int cols = input[0].size();
 
             // Step 1: Apply FFT to each row
@@ -66,17 +64,15 @@ class IterativeFourier final : public BaseTransform<T> {
                 compute1D(input[i], row_fft[i], isDirect);
 
             // Step 2: Transpose
-            //T transposed = this->transpose2D(row_fft);
             this->transpose2D_more_efficient(row_fft);
 
             // Step 3: Apply FFT to each (now transposed) row == original columns
-            T col_fft(row_fft.size());
+            output.resize(cols);
             for (size_t i = 0; i < row_fft.size(); ++i)
-                compute1D(row_fft[i], col_fft[i], isDirect);
+                compute1D(row_fft[i], output[i], isDirect);
 
             // Step 4: Transpose back
-            // TODO: used more efficient transpose here also
-            output = this->transpose2D(col_fft);
+            this->transpose2D_more_efficient(output);
 
             // Step 5: Normalize for inverse FFT
             if (!isDirect) {
@@ -85,7 +81,6 @@ class IterativeFourier final : public BaseTransform<T> {
                         val /= static_cast<double>(rows * cols);
             }
         }
-
     }
 
 public:
