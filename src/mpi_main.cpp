@@ -37,8 +37,10 @@ template<typename T>
 bool compareResults(const T& parallel, const T& sequential, double tolerance = 1e-10) {
     if constexpr (ComplexVector<T>) {
         for (size_t i = 0; i < parallel.size(); i++) {
-            if (std::abs(parallel[i] - sequential[i]) > tolerance)
+            if (std::abs(parallel[i] - sequential[i]) > tolerance) {
+                std::cout << "Mismatch at index " << i << ": parallel = " << parallel[i] << ", sequential = " << sequential[i] << std::endl;
                 return false;
+            }
         }
     } else if constexpr (ComplexVectorMatrix<T>) {
         for (size_t i = 0; i < parallel.size(); i++) {
@@ -53,8 +55,13 @@ bool compareResults(const T& parallel, const T& sequential, double tolerance = 1
 
 int main(int argc, char** argv) {
     // Initialize MPI
-    MPI_Init(&argc, &argv);
+    int provided;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
 
+    if (provided != MPI_THREAD_FUNNELED) {
+        std::cerr << "MPI_THREAD_FUNNELED not implemented" << std::endl;
+        return 1;
+    }
     int rank, world_size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -106,13 +113,15 @@ int main(int argc, char** argv) {
             IterativeFourier<doubleVector> sequentialFFT;
             sequentialFFT.compute(input, sequential_output, true);
 
-            bool match = compareResults(parallel_output, sequential_output);
+            // bool match = compareResults(parallel_output, sequential_output);
 
-            std::cout << "1D FFT with N=" << n << ", processes=" << world_size << std::endl;
-            sequentialFFT.executionTime();
-            parallelFFT.executionTime();
-            std::cout << "Results match: " << (match ? "Yes" : "No") << std::endl;
-            std::cout << "************ Speedup: " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << "x  ***************" << std::endl;
+            // std::cout << "1D FFT with N=" << n << ", processes=" << world_size << std::endl;
+            // sequentialFFT.executionTime();
+            // parallelFFT.executionTime();
+            assert(compareResults(parallel_output, sequential_output));
+            // std::cout << "Results match: " << (match ? "Yes" : "No") << std::endl;
+            std::cout << n << " " << sequentialFFT.getTime().count() << " " << parallelFFT.getTime().count()
+                        << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << std::endl;
         }
     }
     // 2D FFT
