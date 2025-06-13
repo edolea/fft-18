@@ -100,7 +100,6 @@ int main(int argc, char** argv) {
             parallel_output.resize(n);
             sequential_output.resize(n);
         }
-        // resize for all
 
         // Create parallel FFT instance (just once)
         MpiIterativeFourier<doubleVector> parallelFFT(MPI_COMM_WORLD);
@@ -135,10 +134,7 @@ int main(int argc, char** argv) {
             sequential_output.resize(n, doubleVector(n));
         }
 
-        // Create parallel FFT instance (just once)
         MpiIterativeFourier<doubleMatrix> parallelFFT(MPI_COMM_WORLD);
-
-        // Run parallel FFT (compute called once)
         parallelFFT.compute(input, parallel_output, true);
 
         // On rank 0, also run sequential version and compare
@@ -152,6 +148,9 @@ int main(int argc, char** argv) {
             sequentialFFT.executionTime();
             parallelFFT.executionTime();
             std::cout << "Results match: " << (match ? "Yes" : "No") << std::endl;
+
+            // assert(compareResults(parallel_output, sequential_output));
+
             std::cout << "Speedup: " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << "x" << std::endl;
         }
     }
