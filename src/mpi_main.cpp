@@ -119,8 +119,8 @@ int main(int argc, char** argv) {
             // parallelFFT.executionTime();
             assert(compareResults(parallel_output, sequential_output));
             // std::cout << "Results match: " << (match ? "Yes" : "No") << std::endl;
-            std::cout << n << " " << sequentialFFT.getTime().count() << " " << parallelFFT.getTime().count()
-                        << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << std::endl;
+            std::cout << n << "  " << sequentialFFT.getTime().count() << "  " << parallelFFT.getTime().count()
+                        << "  " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << std::endl;
         }
     }
     // 2D FFT
@@ -142,16 +142,17 @@ int main(int argc, char** argv) {
             IterativeFourier<doubleMatrix> sequentialFFT;
             sequentialFFT.compute(input, sequential_output, true);
 
-            bool match = compareResults(parallel_output, sequential_output);
+            //bool match = compareResults(parallel_output, sequential_output);
 
-            std::cout << "2D FFT with N=" << n << ", processes=" << world_size << std::endl;
-            sequentialFFT.executionTime();
-            parallelFFT.executionTime();
-            std::cout << "Results match: " << (match ? "Yes" : "No") << std::endl;
+            //std::cout << "2D FFT with N=" << n << ", processes=" << world_size << std::endl;
+            //sequentialFFT.executionTime();
+            //parallelFFT.executionTime();
+            //std::cout << "Results match: " << (match ? "Yes" : "No") << std::endl;
+            //std::cout << "Speedup: " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << "x" << std::endl;
 
-            // assert(compareResults(parallel_output, sequential_output));
-
-            std::cout << "Speedup: " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << "x" << std::endl;
+            assert(compareResults(parallel_output, sequential_output));
+            std::cout << n << "  " << sequentialFFT.getTime().count() << "  " << parallelFFT.getTime().count()
+                        << "  " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << std::endl;
         }
     }
     else {
