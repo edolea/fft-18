@@ -36,9 +36,6 @@ public:
     // Generate a random vector of complex numbers with a size that is a power of two
     template <ComplexVector T>
     static T generate(size_t size) {
-        // Check if size is a power of two
-        //if (!isPowerOfTwo(size))
-          //  throw std::invalid_argument("Size must be a power of 2.");
         assert(isPowerOfTwo(size));
 
         // Random number generators for real and imaginary parts

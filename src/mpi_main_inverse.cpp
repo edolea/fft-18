@@ -107,12 +107,12 @@ int main(int argc, char** argv) {
         MpiIterativeFourier<doubleVector> parallelFFT(MPI_COMM_WORLD);
 
         // Run parallel FFT
-        parallelFFT.compute(input, parallel_output, true);
+        parallelFFT.compute(input, parallel_output, false);
 
         // On rank 0, also run sequential version and compare
         if (rank == 0) {
             IterativeFourier<doubleVector> sequentialFFT;
-            sequentialFFT.compute(input, sequential_output, true);
+            sequentialFFT.compute(input, sequential_output, false);
 
             assert(compareResults(parallel_output, sequential_output));
             std::cout << n << "  " << sequentialFFT.getTime().count() << "  " << parallelFFT.getTime().count()
@@ -126,18 +126,17 @@ int main(int argc, char** argv) {
         // Only rank 0 initializes data
         if (rank == 0) {
             generateTestData(input, n);
-            // auto input = RandomVectorGenerator::generate<doubleMatrix>(n, 2.0, 1.0);
             parallel_output.resize(n, doubleVector(n));
             sequential_output.resize(n, doubleVector(n));
         }
 
         MpiIterativeFourier<doubleMatrix> parallelFFT(MPI_COMM_WORLD);
-        parallelFFT.compute(input, parallel_output, true);
+        parallelFFT.compute(input, parallel_output, false);
 
         // On rank 0, also run sequential version and compare
         if (rank == 0) {
             IterativeFourier<doubleMatrix> sequentialFFT;
-            sequentialFFT.compute(input, sequential_output, true);
+            sequentialFFT.compute(input, sequential_output, false);
 
             assert(compareResults(parallel_output, sequential_output));
             std::cout << n << "  " << sequentialFFT.getTime().count() << "  " << parallelFFT.getTime().count()

@@ -17,20 +17,20 @@ class MpiIterativeFourier final : public BaseTransform<T> {
     // Convert a flattened 1D buffer back to a 2D matrix
     void unflattenBuffer(const typename T::value_type& flatBuffer, T& matrix,
                         int numRows, int numCols) {
-        for (int i = 0; i < numRows; i++) {
+        #pragma omp parallel for schedule(static)
+        for (int i = 0; i < numRows; i++)
             std::copy(flatBuffer.begin() + i * numCols,
                      flatBuffer.begin() + (i + 1) * numCols,
                      matrix[i].begin());
-        }
     }
 
     // Convert a 2D matrix to a flattened 1D buffer
     void flattenBuffer(const T& matrix, typename T::value_type& flatBuffer,
                       int numRows, int numCols) {
-        for (int i = 0; i < numRows; i++) {
+        #pragma omp parallel for schedule(static)
+        for (int i = 0; i < numRows; i++)
             std::copy(matrix[i].begin(), matrix[i].end(),
                      flatBuffer.begin() + i * numCols);
-        }
     }
 
     // Helper method for 1D FFT computation
@@ -54,7 +54,7 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             int d{1 << j}; // 2^j
             typename VectorType::value_type wn{std::cos(2 * M_PI / d), (isDirect ? 1.0 : -1.0) * std::sin(2 * M_PI / d)};
 
-            // #pragma omp parallel for collapse(2)
+            // #pragma omp parallel for collapse(2) schedule(static, d/2)
             for (int k = 0; k < n; k += d) {
                 typename VectorType::value_type w{1, 0};
                 for (int i = 0; i < d / 2; i++) {
@@ -66,11 +66,6 @@ class MpiIterativeFourier final : public BaseTransform<T> {
                 }
             }
         }
-
-        // Normalize inverse output (only for 1D case - 2D case is handled separately)
-        if (!isDirect && std::is_same_v<VectorType, T>)
-            for (auto &val : output)
-                val /= n;
     }
 
     // Transpose function but for mpi
@@ -78,7 +73,7 @@ class MpiIterativeFourier final : public BaseTransform<T> {
         if (input.empty() || input.size() != input[0].size()) return; // Ensure square matrix
 
         const size_t n = input.size();
-        // #pragma omp parallel for schedule(dynamic)
+        #pragma omp parallel for schedule(dynamic)
         for (size_t i = 0; i < n; ++i)
             for (size_t j = i + 1; j < n; ++j)
                 std::swap(input[i][j], input[j][i]);
@@ -212,9 +207,9 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             MPI_Bcast(&cols, 1, MPI_INT, 0, comm);
 
             // local row count for each process -- for now both are power of 2
-            int local_rows = rows / size;
+            int local_rows = rows / size; // --> local_rows_pre
             // int remainder = rows % size;
-            // int my_rows = local_rows + (rank < remainder ? 1 : 0);
+            // int local_rows = local_rows_pre + (rank < remainder ? 1 : 0);
 
             // Local storage for assigned rows
             T local_input(local_rows, typename T::value_type(cols));
@@ -227,18 +222,15 @@ class MpiIterativeFourier final : public BaseTransform<T> {
 
             // Step 0: Scatter rows to processes
             if (rank == 0)
-                //for (int i = 0; i < rows; i++)
-                //    std::copy(input[i].begin(), input[i].end(), sendbuf.begin() + i * cols);
                 flattenBuffer(input, sendBuff, rows, cols);
             MPI_Scatter(rank == 0 ? sendBuff.data() : nullptr, rank == 0 ? local_rows * cols : 0, MPI_DOUBLE_COMPLEX,
                 recBuff.data(), local_rows * cols, MPI_DOUBLE_COMPLEX, 0, comm);
 
             // Step 0b: unflatten rec
-            //for (int i = 0; i < local_rows; i++)
-            //    std::copy(recBuff.begin() + i * cols, recBuff.begin() + (i + 1) * cols, local_input[i].begin());
             unflattenBuffer(recBuff, local_input, local_rows, cols);
 
             // Step 1: Apply FFT to each row
+            #pragma omp parallel for schedule(static)
             for (int i = 0; i < local_rows; ++i)
                 compute1D(local_input[i], local_output[i], isDirect);
 
@@ -246,9 +238,9 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             T row_fft;
             if (rank == 0) {
                 row_fft.resize(rows);
-                for (auto& row : row_fft) {
+                #pragma omp parallel for schedule(static)
+                for (auto& row : row_fft)
                     row.resize(cols);
-                }
             }
 
             flattenBuffer(local_output, sendBuff_notRoot, local_rows, cols);
@@ -259,19 +251,15 @@ class MpiIterativeFourier final : public BaseTransform<T> {
 
             // Step 1.5b: Rank 0 reshapes gathered data
             if (rank == 0) {
-                //for (int i = 0; i < rows; i++)
-                  //  std::copy(recvbuf.begin() + i * cols, recvbuf.begin() + (i + 1) * cols, row_fft[i].begin());
                 unflattenBuffer(recvbuf, row_fft, rows, cols);
 
-                // --- Step 2: Transpose on root ---
+                // Step 2: Transpose on root
                 transpose2D_more_efficient(row_fft);
             }
 
             // Step 2.5: scatter again
             typename T::value_type sendbuf(rows * cols);
             if (rank == 0)
-                //for (int i = 0; i < rows; i++)
-                  //  std::copy(row_fft[i].begin(), row_fft[i].end(), sendbuf.begin() + i * cols);
                 flattenBuffer(row_fft, sendbuf, rows, cols);
             MPI_Scatter(rank == 0 ? sendbuf.data() : nullptr, rank == 0 ? local_rows * cols : 0, MPI_DOUBLE_COMPLEX,
             recBuff.data(), local_rows * cols, MPI_DOUBLE_COMPLEX, 0, comm);
@@ -280,6 +268,7 @@ class MpiIterativeFourier final : public BaseTransform<T> {
 
 
             // Step 3: Apply FFT to each (now transposed) row == original columns
+            #pragma omp parallel for schedule(static)
             for (size_t i = 0; i < local_rows; ++i)
                 compute1D(local_input[i], local_output[i], isDirect);
 
@@ -287,9 +276,10 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             output.clear();
             if (rank == 0) {
                 output.resize(rows);
-                for (auto& row : output) {
+
+                #pragma omp parallel for schedule(static)
+                for (auto& row : output)
                     row.resize(cols);
-                }
             }
 
             flattenBuffer(local_output, sendBuff_notRoot, local_rows, cols);
@@ -300,21 +290,24 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             // Step 3.5b: reshape on root again
             if (rank == 0) {
                 // Reshape gathered data into output
-                for (int i = 0; i < rows; i++) {
+                #pragma omp parallel for schedule(static)
+                for (int i = 0; i < rows; i++)
                     std::copy(recvbuf.begin() + i * cols,
                              recvbuf.begin() + (i + 1) * cols,
                              output[i].begin());
-                }
-                unflattenBuffer(recvbuf, output, rows, cols);
-                // --- Step 4: Transpose back on root ---
-                transpose2D_more_efficient(output);
 
-                // --- Step 5: Normalize for inverse FFT ---
-                if (!isDirect) {
-                    for (auto& row : output)
-                        for (auto& val : row)
-                            val /= static_cast<double>(rows * cols);
-                }
+                // Step 5: Normalize for inverse FFT
+                if (!isDirect)
+                    #pragma omp parallel for schedule(static)
+                    for (auto& val : recvbuf)
+                        val /= static_cast<typename T::value_type::value_type::value_type>(rows * cols);
+
+                // NB: normalizing on recvbuf is better bc all the vector inside contiguous heap memory block
+                //      with matrix each row would be on different heap --> worse threads performance
+                unflattenBuffer(recvbuf, output, rows, cols);
+
+                // Step 4: Transpose back on root
+                transpose2D_more_efficient(output);
             }
         }
     }

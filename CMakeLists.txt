@@ -81,9 +81,6 @@ include(GoogleTest)
 gtest_discover_tests(cpu_test)
 
 
-
-
-# include_directories(${MPI_INCLUDE_PATH})
 include_directories(${MPI_INCLUDE_PATH})
 
 # Set OpenMP paths for Homebrew on macOS
@@ -116,12 +113,14 @@ find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(MPI REQUIRED)
 
-target_link_libraries(main_cpu ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
-target_link_libraries(main_cpu Threads::Threads)
+#target_link_libraries(main_cpu ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
 
-# executable for MPI main
+# executable for MPI main & MPI inverse main
 add_executable(mpi_main src/mpi_main.cpp)
+add_executable(mpi_main_inverse src/mpi_main_inverse.cpp)
 target_link_libraries(mpi_main ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
+target_link_libraries(mpi_main_inverse ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
+
 #[[
 
 add_custom_target(run_mpi_main
