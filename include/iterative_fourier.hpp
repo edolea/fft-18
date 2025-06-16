@@ -64,7 +64,7 @@ class IterativeFourier final : public BaseTransform<T> {
                 compute1D(input[i], row_fft[i], isDirect);
 
             // Step 2: Transpose
-            this->transpose2D_more_efficient(row_fft);
+            this->transpose2D(row_fft);
 
             // Step 3: Apply FFT to each (now transposed) row == original columns
             output.resize(cols);
@@ -72,7 +72,7 @@ class IterativeFourier final : public BaseTransform<T> {
                 compute1D(row_fft[i], output[i], isDirect);
 
             // Step 4: Transpose back
-            this->transpose2D_more_efficient(output);
+            this->transpose2D(output);
 
             // Step 5: Normalize for inverse FFT
             if (!isDirect) {

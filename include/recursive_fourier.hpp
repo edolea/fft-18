@@ -31,15 +31,15 @@ class RecursiveFourier final : public BaseTransform<T> {
                 row_fft[i] = algorithm1D(input[i], isDirect);
 
             // Step 2: Transpose
-            T transposed = this->transpose2D(row_fft);
+            this->transpose2D(row_fft);
 
             // Step 3: Column-wise FFT (as row-wise on transposed)
-            T col_fft(transposed.size());
-            for (size_t i = 0; i < transposed.size(); ++i)
-                col_fft[i] = algorithm1D(transposed[i], isDirect);
+            output.resize(cols);
+            for (size_t i = 0; i < row_fft.size(); ++i)
+                output[i] = algorithm1D(row_fft[i], isDirect);
 
             // Step 4: Transpose back
-            output = this->transpose2D(col_fft);
+            this->transpose2D(output);
 
             // Step 5: Normalize for inverse FFT
             if (!isDirect) {
