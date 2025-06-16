@@ -43,11 +43,6 @@ add_executable(cpu_test
         test/cpu_test.cpp
 )
 
-# Add this after your cpu_test executable declaration
-#add_executable(cpu_mpi_test
-        #test/cpu_mpi_test.cpp
-        #test/mpi01.cpp )
-
 
 # Try to find CUDA (modern CMake)
 find_package(CUDAToolkit QUIET)
@@ -120,30 +115,6 @@ add_executable(mpi_main src/mpi_main.cpp)
 add_executable(mpi_main_inverse src/mpi_main_inverse.cpp)
 target_link_libraries(mpi_main ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
 target_link_libraries(mpi_main_inverse ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
-
-#[[
-
-add_custom_target(run_mpi_main
-    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4
-    ${MPIEXEC_PREFLAGS} $<TARGET_FILE:mpi_main> ${MPIEXEC_POSTFLAGS}
-    DEPENDS mpi_main
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Running mpi_main with 4 MPI processes"
-)
-]]
-
-# Link with MPI and other libraries
-#[[
-target_link_libraries(cpu_mpi_test gtest ${MPI_LIBRARIES} OpenMP::OpenMP_CXX)
-target_include_directories(cpu_mpi_test PRIVATE ${MPI_INCLUDE_PATH})
-
-# Add custom test target to run with MPI
-add_test(
-        NAME MPITest
-        COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4
-        ${MPIEXEC_PREFLAGS} $<TARGET_FILE:cpu_mpi_test> ${MPIEXEC_POSTFLAGS}
-)
-]]
 
 # Set compiler flags
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp")
