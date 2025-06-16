@@ -43,23 +43,23 @@ __device__ void thread_write(bool direct, int t_x, int d, cuDoubleComplex *y, cu
 {
     double result_real, result_imag;
 
-    bool up_down; // up = 1 down = 0 ( if down it will write on x otherwise it will write on t)
+    bool is_primary_writer;
     int tmp_index;
     int p;
     cuDoubleComplex w;
 
     if ((t_x % d) < d / 2)
     {
-        up_down = 0;
+        is_primary_writer = 0;
     }
     else
-        up_down = 1;
+        is_primary_writer = 1;
 
     // DOWN CASE
-    if (!up_down)
+    if (!is_primary_writer)
     {
         tmp_index = t_x + d / 2;
-        // printf("Thread n: %d, Iteration : %d => up_down = %d, index_of_writing : %d\n",t_x, j ,up_down, tmp_index);
+        // printf("Thread n: %d, Iteration : %d => is_primary_writer = %d, index_of_writing : %d\n",t_x, j ,is_primary_writer, tmp_index);
         x[tmp_index] = y[t_x];
         x[t_x] = y[t_x];
     }
@@ -67,7 +67,7 @@ __device__ void thread_write(bool direct, int t_x, int d, cuDoubleComplex *y, cu
     else
     {
         tmp_index = t_x - d / 2;
-        // printf("Thread n: %d, Iteration : %d => up_down = %d, index_of_writing : %d\n",t_x, j ,up_down, tmp_index);
+        // printf("Thread n: %d, Iteration : %d => is_primary_writer = %d, index_of_writing : %d\n",t_x, j ,is_primary_writer, tmp_index);
         p = (int)(tmp_index % d);
         if (direct)
         {

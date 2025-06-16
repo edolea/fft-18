@@ -56,12 +56,12 @@ if(CUDAToolkit_FOUND)
     enable_language(CUDA)
 
     # GPU executable
-    add_executable(gpu_exec
+    add_executable(main_gpu
         src/gpu_main.cu
     )
-    set_target_properties(gpu_exec PROPERTIES CUDA_ARCHITECTURES 70)
-    target_compile_options(gpu_exec PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
-    target_link_libraries(gpu_exec PRIVATE cufft)
+    set_target_properties(main_gpu PROPERTIES CUDA_ARCHITECTURES 70)
+    target_compile_options(main_gpu PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=550>)
+    target_link_libraries(main_gpu PRIVATE cufft)
 
     add_executable(gpu_test
             test/gpu_test.cu

@@ -28,9 +28,6 @@ public:
            if (isDirect) {this->computationDir2d(this->input);}
            else {this->computationInv2d(input_i);}
         }
-
-
-
     }
 
 
