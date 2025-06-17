@@ -7,6 +7,32 @@ project(FFT_HPC)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# === MAC (Homebrew OpenMP fix) ===
+if(APPLE)
+    execute_process(
+            COMMAND brew --prefix libomp
+            OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+    )
+
+    if(HOMEBREW_LIBOMP_PREFIX)
+        set(OpenMP_ROOT ${HOMEBREW_LIBOMP_PREFIX})
+
+        # Explicitly set the library paths that CMake is looking for
+        set(OpenMP_omp_LIBRARY ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_C_LIB_NAMES "omp")
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+
+        # Set the libraries
+        set(OpenMP_C_LIBRARIES ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+        set(OpenMP_CXX_LIBRARIES ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
+        set(OpenCV_DIR /opt/homebrew/Cellar/opencv/4.11.0_1/lib/cmake/opencv4)
+    endif()
+endif()
+
 # === Find dependencies ===
 find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
@@ -65,27 +91,6 @@ add_executable(mpi_main src/mpi_main.cpp)
 add_executable(mpi_main_inverse src/mpi_main_inverse.cpp)
 target_link_libraries(mpi_main ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
 target_link_libraries(mpi_main_inverse ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
-
-# === MAC (Homebrew OpenMP fix) ===
-if(APPLE)
-    execute_process(
-            COMMAND brew --prefix libomp
-            OUTPUT_VARIABLE HOMEBREW_LIBOMP_PREFIX
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-    )
-
-    if(HOMEBREW_LIBOMP_PREFIX)
-        set(OpenMP_ROOT ${HOMEBREW_LIBOMP_PREFIX})
-        set(OpenMP_omp_LIBRARY ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
-        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
-        set(OpenMP_C_LIB_NAMES "omp")
-        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I${HOMEBREW_LIBOMP_PREFIX}/include")
-        set(OpenMP_CXX_LIB_NAMES "omp")
-        set(OpenMP_C_LIBRARIES ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
-        set(OpenMP_CXX_LIBRARIES ${HOMEBREW_LIBOMP_PREFIX}/lib/libomp.dylib)
-    endif()
-endif()
 
 # === Image Compression Executable ===
 add_executable(image_compression_exec
