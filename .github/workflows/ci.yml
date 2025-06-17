@@ -13,11 +13,12 @@ jobs:
         with:
           submodules: recursive # Ensures submodules are initialized and updated
 
-      - name: Install MPI, OpenMP, and OpenCV
+      - name: Install MPI, OpenMP, OpenCV, and libcurl
         run: |
           sudo apt-get update
           sudo apt-get install -y libopenmpi-dev openmpi-bin libomp-dev
           sudo apt-get install -y libopencv-dev
+          sudo apt-get install -y libcurl4-openssl-dev
 
 
       - name: Setup CMake
