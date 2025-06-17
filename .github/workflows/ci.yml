@@ -13,10 +13,12 @@ jobs:
         with:
           submodules: recursive # Ensures submodules are initialized and updated
 
-      - name: Install MPI and openMP
+      - name: Install MPI, OpenMP, and OpenCV
         run: |
           sudo apt-get update
           sudo apt-get install -y libopenmpi-dev openmpi-bin libomp-dev
+          sudo apt-get install -y libopencv-dev
+
 
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1
