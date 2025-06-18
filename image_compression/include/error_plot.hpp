@@ -10,6 +10,7 @@
 
 struct ErrorData {
     double error;
+    double psnr;
     int frequencies_eliminated;
 };
 
@@ -27,6 +28,5 @@ private:
     cv::Mat original_;
     std::vector<std::pair<double, ErrorData>> error_results_;
 };
-
 
 #endif

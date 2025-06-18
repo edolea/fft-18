@@ -18,7 +18,9 @@ public:
     void ComputeReconstructionError();
     void SaveMagnitudeToCSV(const std::string& filename, bool filtered) const;
 
+    // === Getters ===
     double GetError() const;
+    double GetPSNR() const;
     const std::vector<std::vector<std::complex<double>>>& GetOriginalFFT() const;
     const std::vector<std::vector<std::complex<double>>>& GetFilteredFFT() const;
     const cv::Mat& GetReconstructedImage() const;
@@ -33,7 +35,7 @@ private:
     std::vector<std::vector<std::complex<double>>> filtered_fft2d_;
 
     double reconstruction_error_;
+    double psnr_value_ = 0.0;
 };
-
 
 #endif
