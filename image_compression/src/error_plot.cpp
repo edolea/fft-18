@@ -7,7 +7,6 @@
 #include <algorithm>
 #include "../include/fft_utils.hpp"
 
-
 ErrorPlot::ErrorPlot(const cv::Mat& original_image) {
     original_image.convertTo(original_, CV_32F);
     n_ = original_.rows;
@@ -35,16 +34,19 @@ void ErrorPlot::ComputeErrorsMagnitudeThresholds(const std::vector<double>& thre
             }
         }
 
-        fft2D.compute(filtered, filtered, false);  // inverse FFT in-place
+        fft2D.compute(filtered, filtered, false);  // inverse FFT
         cv::Mat reconstructed = complex2DToMat(filtered);
 
-        double error = 0.0;
+        double mse = 0.0;
         for (int i = 0; i < n_; i++)
             for (int j = 0; j < n_; j++)
-                error += std::pow(original_.at<float>(i, j) - reconstructed.at<float>(i, j), 2);
+                mse += std::pow(original_.at<float>(i, j) - reconstructed.at<float>(i, j), 2);
+        mse /= (n_ * n_);
 
-        error = std::sqrt(error) / (n_ * n_);
-        error_results_.emplace_back(t, ErrorData{error, zeroed});
+        double rmse = std::sqrt(mse);
+        double psnr = (mse == 0.0) ? INFINITY : 10.0 * std::log10(255.0 * 255.0 / mse);
+
+        error_results_.emplace_back(t, ErrorData{rmse, psnr, zeroed});
     }
 }
 
@@ -82,13 +84,16 @@ void ErrorPlot::ComputeErrorsBandThresholds(const std::vector<double>& percentag
         fft2D.compute(filtered, filtered, false);  // inverse FFT
         cv::Mat reconstructed = complex2DToMat(filtered);
 
-        double error = 0.0;
+        double mse = 0.0;
         for (int i = 0; i < n_; i++)
             for (int j = 0; j < n_; j++)
-                error += std::pow(original_.at<float>(i, j) - reconstructed.at<float>(i, j), 2);
+                mse += std::pow(original_.at<float>(i, j) - reconstructed.at<float>(i, j), 2);
+        mse /= (n_ * n_);
 
-        error = std::sqrt(error) / (n_ * n_);
-        error_results_.emplace_back(perc, ErrorData{error, zeroed});
+        double rmse = std::sqrt(mse);
+        double psnr = (mse == 0.0) ? INFINITY : 10.0 * std::log10(255.0 * 255.0 / mse);
+
+        error_results_.emplace_back(perc, ErrorData{rmse, psnr, zeroed});
     }
 }
 
@@ -99,9 +104,9 @@ void ErrorPlot::SaveToCSV(const std::string& filename) const {
         return;
     }
 
-    file << "ThresholdOrRadius,Error,FrequenciesEliminated\n";
+    file << "ThresholdOrRadius,RMSE,PSNR,FrequenciesEliminated\n";
     for (const auto& [threshold, data] : error_results_) {
-        file << threshold << "," << data.error << "," << data.frequencies_eliminated << "\n";
+        file << threshold << "," << data.error << "," << data.psnr << "," << data.frequencies_eliminated << "\n";
     }
 
     file.close();

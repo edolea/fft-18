@@ -20,6 +20,7 @@ public:
     void SaveMagnitudeToCSV(const std::string& filename, bool after_filter = false) const;
 
     double GetError() const;
+    double GetPSNR() const;
     const std::vector<std::vector<std::complex<double>>>& GetOriginalFFT() const;
     const std::vector<std::vector<std::complex<double>>>& GetFilteredFFT() const;
     const cv::Mat& GetReconstructedImage() const;
@@ -27,6 +28,7 @@ public:
 private:
     int n_;
     double reconstruction_error_;
+    double psnr_value_;  // <--- aggiunto
 
     cv::Mat original_image_;
     cv::Mat original_float_;
@@ -35,6 +37,5 @@ private:
     std::vector<std::vector<std::complex<double>>> fft2d_;
     std::vector<std::vector<std::complex<double>>> filtered_fft2d_;
 };
-
 
 #endif
