@@ -13,7 +13,6 @@ cmake ..
 make
 
 # Run the resulting executables
-
-./main_gpu
+#./main_gpu
 
 

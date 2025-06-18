@@ -84,3 +84,34 @@ if(CUDAToolkit_FOUND)
     include(GoogleTest)
     gtest_discover_tests(gpu_test)
 endif()
+
+if(OpenCV_FOUND)
+    include_directories(${OpenCV_INCLUDE_DIRS})
+
+    # === Image Compression Executable ===
+    add_executable(image_compression_exec
+            image_compression/src/svd_analysis.cpp
+            image_compression/src/error_plot.cpp
+            image_compression/src/fft_analysis_magnitude.cpp
+            image_compression/src/fft_analysis_band.cpp
+            image_compression/src/image_saver.cpp
+            image_compression/src/fft_utils.cpp
+            src/image_compression_main.cpp
+    )
+
+    target_link_libraries(image_compression_exec
+            ${MPI_LIBRARIES}
+            OpenMP::OpenMP_CXX
+            Threads::Threads
+            ${OpenCV_LIBS}
+            curl
+            sqlite3
+    )
+endif ()
+
+# === MPI executables ===
+add_executable(mpi_main src/mpi_main.cpp)
+add_executable(mpi_main_inverse src/mpi_main_inverse.cpp)
+target_link_libraries(mpi_main ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
+target_link_libraries(mpi_main_inverse ${MPI_LIBRARIES} OpenMP::OpenMP_CXX Threads::Threads)
+
