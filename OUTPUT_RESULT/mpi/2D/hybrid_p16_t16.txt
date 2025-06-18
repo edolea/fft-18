@@ -1,42 +1,6 @@
 ===== HYBRID: 16 PROCESSES × 16 THREADS =====
 N  sequential  mpi  speedup
---------------------------------------------------------------------------
-mpiexec was unable to launch the specified application as it could not access
-or execute an executable:
-
-Executable: ./mpi_main
-Node: francesco-virgulti-Predator-PHN16-72
-
-while attempting to start process rank 0.
---------------------------------------------------------------------------
-16 total processes failed to start
---------------------------------------------------------------------------
-mpiexec was unable to launch the specified application as it could not access
-or execute an executable:
-
-Executable: ./mpi_main
-Node: francesco-virgulti-Predator-PHN16-72
-
-while attempting to start process rank 0.
---------------------------------------------------------------------------
-16 total processes failed to start
---------------------------------------------------------------------------
-mpiexec was unable to launch the specified application as it could not access
-or execute an executable:
-
-Executable: ./mpi_main
-Node: francesco-virgulti-Predator-PHN16-72
-
-while attempting to start process rank 0.
---------------------------------------------------------------------------
-16 total processes failed to start
---------------------------------------------------------------------------
-mpiexec was unable to launch the specified application as it could not access
-or execute an executable:
-
-Executable: ./mpi_main
-Node: francesco-virgulti-Predator-PHN16-72
-
-while attempting to start process rank 0.
---------------------------------------------------------------------------
-16 total processes failed to start
+512  0.0781423  0.0255148  3.06263
+1024  0.504504  0.122133  4.13076
+2048  2.02771  0.8087  2.50737
+4096  7.92137  3.24944  2.43777
