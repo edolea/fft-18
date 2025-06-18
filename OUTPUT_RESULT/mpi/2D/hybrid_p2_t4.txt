@@ -1,0 +1,10 @@
+===== HYBRID: 2 PROCESSES × 4 THREADS =====
+N  sequential  mpi  speedup
+512  0.0821818  0.0536658  1.53136
+1024  0.400381  0.247016  1.62087
+2048  1.83265  1.0845  1.68985
+4096  7.81369  4.60706  1.69602
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------

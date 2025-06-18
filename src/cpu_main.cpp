@@ -5,6 +5,7 @@
 #include "iterative_fourier.hpp"
 #include "vector_generator.hpp"
 #include "timing_saver.h"
+#include "save_result.hpp"
 #include <cmath>
 
 void vector_print(const doubleVector &result);
@@ -14,17 +15,20 @@ int size = 1024; // Maximum size of the vector for testing
 double frequency = 2.0;
 double amplitude = 1.0;
 
-std::vector<size_t> initialize_vector(size_t max_size) {
+std::vector<size_t> initialize_vector(size_t max_size)
+{
     std::vector<size_t> n_list;
-    for (size_t i = 1; i <= max_size; i = i * 2) {
+    for (size_t i = 1; i <= max_size; i = i * 2)
+    {
         n_list.push_back(i);
     }
     return n_list;
 }
 int main()
 {
-    std::vector<std::pair<int, double>> time_recursive_fft,time_iterative_fft;
-    for (const std::vector<size_t> n_list = initialize_vector(size); size_t n : n_list) {
+    std::vector<std::pair<int, double>> time_recursive_fft, time_iterative_fft;
+    for (const std::vector<size_t> n_list = initialize_vector(size); size_t n : n_list)
+    {
         const auto input = RandomVectorGenerator::generate<doubleVector>(n);
         doubleVector output_recursive;
         doubleVector output_iterative;
@@ -39,9 +43,4 @@ int main()
 
     TimingSaver::saveFFTTimings(time_recursive_fft, "recursive_fft_timings.txt");
     TimingSaver::saveFFTTimings(time_iterative_fft, "iterative_fft_timings.txt");
-
-
-
-
-
 }

@@ -1,6 +1,6 @@
 .vscode/
 build
-OUTPUT_RESULT/mpi
+
 
 .idea
 .xml
