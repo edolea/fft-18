@@ -64,7 +64,7 @@ docker exec -it $CONTAINER_NAME bash -c "
         echo 'Creating virtual environment...'
         python3 -m venv .venv
         source .venv/bin/activate
-        pip install numpy matplotlib --break-system-packages
+        pip install numpy matplotlib pandas --break-system-packages
     else
         echo 'Activating existing virtual environment...'
         source .venv/bin/activate

@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
   fft_mag.SaveFFTToCSV("../OUTPUT_RESULT/csv_output/fft_output_2d.csv");
 
   std::ofstream mag_csv("../OUTPUT_RESULT/csv_output/error_vs_threshold_magnitude_percentage.csv");
-  mag_csv << "Percentage,Error\n";
+  mag_csv << "Percentage,RMSE,PSNR\n";
   for (double perc : percentages) {
     fft_mag.ApplyThresholdPercentage(perc);
     fft_mag.SaveMagnitudeToCSV("../OUTPUT_RESULT/csv_output/fft_magnitude_filtered_" + std::to_string(static_cast<int>(perc)) + "p_magnitude.csv", true);
@@ -43,19 +43,18 @@ int main(int argc, char* argv[]) {
     ImageSaver::SaveMagnitudeSpectrum(fft_mag.GetFilteredFFT(), size, perc, "magnitude", true);
     ImageSaver::SaveReconstructedImage(fft_mag.GetReconstructedImage(), perc, "magnitude");
 
-    mag_csv << std::fixed << std::setprecision(50)
-            << perc << "," << fft_mag.GetError() << "\n";
+    mag_csv << std::fixed << std::setprecision(6)
+            << perc << "," << fft_mag.GetError() << "," << fft_mag.GetPSNR() << "\n";
   }
   mag_csv.close();
 
-  // === FFT BAND (FREQUENCY FILTERING) ===
+  // === FFT BAND ===
   FFTAnalysisBand fft_band(size);
   fft_band.LoadImage(image_path);
   fft_band.ComputeFFT();
 
   std::ofstream band_csv("../OUTPUT_RESULT/csv_output/error_vs_threshold_band_percentage.csv");
-  band_csv << "Percentage,Error\n";
-
+  band_csv << "Percentage,RMSE,PSNR\n";
   for (double perc : percentages) {
     fft_band.ApplyBandpassFilterPercentage(perc);
     fft_band.SaveMagnitudeToCSV("../OUTPUT_RESULT/csv_output/fft_magnitude_filtered_" + std::to_string(static_cast<int>(perc)) + "p_band.csv", true);
@@ -65,12 +64,12 @@ int main(int argc, char* argv[]) {
     ImageSaver::SaveMagnitudeSpectrum(fft_band.GetFilteredFFT(), size, perc, "band", true);
     ImageSaver::SaveReconstructedImage(fft_band.GetReconstructedImage(), perc, "band");
 
-    band_csv << std::fixed << std::setprecision(50)
-             << perc << "," << fft_band.GetError() << "\n";
+    band_csv << std::fixed << std::setprecision(6)
+             << perc << "," << fft_band.GetError() << "," << fft_band.GetPSNR() << "\n";
   }
   band_csv.close();
 
-  // === ERROR CSV EXPORT (ABSOLUTE THRESHOLDS) ===
+  // === ERROR PLOT (ABSOLUTE) ===
   cv::Mat input = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
   cv::resize(input, input, cv::Size(size, size));
 

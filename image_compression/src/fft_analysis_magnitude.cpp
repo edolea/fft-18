@@ -2,16 +2,14 @@
 #include "../include/fft_utils.hpp"
 #include "../../include/iterative_fourier.hpp"
 
-
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 
-
 FFTAnalysisMagnitude::FFTAnalysisMagnitude(int size)
-    : n_(size), reconstruction_error_(0.0) {}
+    : n_(size), reconstruction_error_(0.0), psnr_value_(0.0) {}
 
 void FFTAnalysisMagnitude::LoadImage(const std::string& path) {
     original_image_ = cv::imread(path, cv::IMREAD_GRAYSCALE);
@@ -46,12 +44,10 @@ void FFTAnalysisMagnitude::ApplyThresholdPercentage(double percentage) {
     index = std::min(index, magnitudes.size() - 1);
     double threshold = magnitudes[index];
 
-    int zeroed = 0;
     for (int i = 0; i < n_; i++) {
         for (int j = 0; j < n_; j++) {
             if (std::abs(filtered_fft2d_[i][j]) < threshold) {
                 filtered_fft2d_[i][j] = 0;
-                ++zeroed;
             }
         }
     }
@@ -69,11 +65,23 @@ void FFTAnalysisMagnitude::ComputeReconstructionError() {
     reconstructed_image_.convertTo(recon_float, CV_32F);
 
     double error = 0.0;
-    for (int i = 0; i < n_; i++)
-        for (int j = 0; j < n_; j++)
-            error += std::pow(original_float_.at<float>(i, j) - recon_float.at<float>(i, j), 2);
+    double max_pixel = 255.0;
 
+    for (int i = 0; i < n_; i++) {
+        for (int j = 0; j < n_; j++) {
+            float orig = original_float_.at<float>(i, j);
+            float recon = recon_float.at<float>(i, j);
+            error += std::pow(orig - recon, 2);
+        }
+    }
+
+    double mse = error / (n_ * n_);
     reconstruction_error_ = std::sqrt(error) / (n_ * n_);
+
+    if (mse == 0)
+        psnr_value_ = INFINITY;
+    else
+        psnr_value_ = 10.0 * std::log10((max_pixel * max_pixel) / mse);
 }
 
 void FFTAnalysisMagnitude::SaveFFTToCSV(const std::string& filename) const {
@@ -112,7 +120,6 @@ void FFTAnalysisMagnitude::SaveMagnitudeToCSV(const std::string& filename, bool 
     }
 
     file << std::setprecision(12) << std::fixed;
-
     for (int i = 0; i < n_; i++) {
         for (int j = 0; j < n_; j++) {
             double magnitude = std::abs(data[i][j]);
@@ -129,6 +136,10 @@ void FFTAnalysisMagnitude::SaveMagnitudeToCSV(const std::string& filename, bool 
 
 double FFTAnalysisMagnitude::GetError() const {
     return reconstruction_error_;
+}
+
+double FFTAnalysisMagnitude::GetPSNR() const {
+    return psnr_value_;
 }
 
 const std::vector<std::vector<std::complex<double>>>& FFTAnalysisMagnitude::GetOriginalFFT() const {

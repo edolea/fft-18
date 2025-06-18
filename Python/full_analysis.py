@@ -102,4 +102,47 @@ if os.path.exists(mag_path) and os.path.exists(band_path):
         output_file=os.path.join(output_dir, "error_comparison.png")
     )
 
+# === PSNR PLOT: MAGNITUDE ===
+print("Plotting PSNR vs Threshold (Magnitude)...")
+
+def try_plot_psnr(csv_name, title, image_name, xlabel):
+    path = f"{csv_dir}/{csv_name}"
+    if os.path.exists(path):
+        x, _, psnr = plot_1d.load_error_and_psnr(path)
+        plot_1d.plot_psnr_vs_threshold(
+            x,
+            psnr,
+            title=title,
+            xlabel=xlabel,
+            ylabel="PSNR (dB)",
+            output_file=os.path.join(output_dir, image_name)
+        )
+
+try_plot_psnr("error_vs_threshold_magnitude_percentage.csv", "PSNR vs Threshold (Magnitude)", "psnr_magnitude.png", "Threshold / Percentile")
+
+# === PSNR PLOT: BAND ===
+print("Plotting PSNR vs Threshold (Band)...")
+try_plot_psnr("error_vs_threshold_band_percentage.csv", "PSNR vs Threshold (Band)", "psnr_band.png", "Threshold / Percentile")
+
+# === PSNR COMPARISON PLOT ===
+print("Plotting PSNR Comparison between Magnitude and Band...")
+
+mag_path = f"{csv_dir}/error_vs_threshold_magnitude_percentage.csv"
+band_path = f"{csv_dir}/error_vs_threshold_band_percentage.csv"
+
+if os.path.exists(mag_path) and os.path.exists(band_path):
+    x_mag, _, psnr_mag = plot_1d.load_error_and_psnr(mag_path)
+    x_band, _, psnr_band = plot_1d.load_error_and_psnr(band_path)
+
+    if not np.allclose(x_mag, x_band):
+        print("Warning: Percentages do not match exactly between magnitude and band!")
+
+    plot_1d.plot_psnr_comparison(
+        x_mag,
+        psnr_mag,
+        psnr_band,
+        title="PSNR Comparison: Magnitude vs Band",
+        output_file=os.path.join(output_dir, "psnr_comparison.png")
+    )
+
 print("\nAll plots completed and saved in '../OUTPUT_RESULT/Plot_result' folder!")
