@@ -44,7 +44,7 @@ class MpiIterativeFourier final : public BaseTransform<T> {
         for (int i = 0; i < n; i++) {
             int j = 0;
             for (int k = 0; k < m; k++)
-                if (i & (1 << k))
+                if (i & 1 << k) // checks if k-th bit is 1
                     j |= (1 << (m - 1 - k));
             output[j] = input[i];
         }
