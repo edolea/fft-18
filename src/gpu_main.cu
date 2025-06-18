@@ -8,7 +8,7 @@ double ParameterClass::frequency = 0.0;
 double ParameterClass::amplitude = 0.0;
 
 
-int max_vector_size = 2048; // Maximum size of the vector for testing
+int max_vector_size = 4096 *2; // Maximum size of the vector for testing
 double frequency = 2.0;
 double amplitude = 1.0;
 
@@ -31,8 +31,9 @@ int main()
         gpuFft.compute(input);
         timings_parallel_fft.emplace_back(n, gpuFft.getTime().count(), THREAD_PER_BLOCK);
     }
-
-    TimingSaver::saveParallelFFTTimings(timings_parallel_fft, "timings_parallel_fft.txt");
+    const std::string& outputFilename = "timings_parallel_fft_" +  std::to_string(THREAD_PER_BLOCK) +  ".txt";
+    std::cout << "Saving timings to " << outputFilename << std::endl;
+    TimingSaver::saveParallelFFTTimings(timings_parallel_fft, outputFilename);
 
     return 0;
 }

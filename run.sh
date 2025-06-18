@@ -13,11 +13,7 @@ cmake ..
 make
 
 # Run the resulting executables
-#./main_cpu
-#./cpu_test
+
 ./main_gpu
-# Only run gpu_test if it exists
-if [ -f ./gpu_test ]; then
-#    ./gpu_test
 
 
