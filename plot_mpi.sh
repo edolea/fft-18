@@ -2,7 +2,7 @@
 
 # Navigate to the script directory
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-PYTHON_SCRIPT="$SCRIPT_DIR/Python/mpi_v5.py"
+PYTHON_SCRIPT="$SCRIPT_DIR/Python/mpi.py"
 
 # Check if Python is installed
 if ! command -v python3 &> /dev/null; then
