@@ -59,7 +59,7 @@ for directory in directories:
             plt.plot(sizes_mpi, times_mpi, label=label.replace("_", " ").replace(".txt", ""), marker='s')
 
     # for now leave them in normal scale
-    #plt.xscale('log')
+    plt.xscale('log', base=2)
     #plt.yscale('log')
     plt.xlabel("Problem Size (N)")
     plt.ylabel("Time (seconds)")
@@ -80,7 +80,7 @@ for directory in directories:
             plt.plot(sizes_speedup, values_speedup, label=label.replace("_", " ").replace(".txt", ""), marker='s')
 
     # for now leave them in normal scale
-    #plt.xscale('log')
+    plt.xscale('log', base=2)
     #plt.yscale('log')
     plt.xlabel("Problem Size (N)")
     plt.ylabel("Speedup")
