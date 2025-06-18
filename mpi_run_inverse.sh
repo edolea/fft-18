@@ -6,7 +6,7 @@ mkdir -p ../OUTPUT_RESULT/mpi
 mkdir -p ../OUTPUT_RESULT/mpi/1D_inverse
 mkdir -p ../OUTPUT_RESULT/mpi/2D_inverse
 
-for CONFIG in "2 4" "2 8" "4 2" "4 4" "4 8" "1 4" "1 8" # TODO x FRA: trova tu la combo migliore
+for CONFIG in "4 4" "4 8" "8 4" "8 8" "16 4" "16 8" "16 16" "1 16" "16 1" 
 do
   read PROCS THREADS <<< "$CONFIG"
   export OMP_NUM_THREADS=$THREADS
@@ -32,7 +32,7 @@ echo "**************** 2D INVERSE ****************"
 echo "   "
 echo "   "
 
-for CONFIG in "2 4" "2 8" "4 2" "4 4" "4 8" "1 4" "1 8" # TODO x FRA: trova tu la combo migliore
+for CONFIG in "4 4" "4 8" "8 4" "8 8" "16 4" "16 8" "16 16" "1 16" "16 1" 
 do
   read PROCS THREADS <<< "$CONFIG"
   export OMP_NUM_THREADS=$THREADS

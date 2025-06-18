@@ -19,5 +19,5 @@ make
 # Only run gpu_test if it exists
 if [ -f ./gpu_test ]; then
 #    ./gpu_test
-fi
+
 
