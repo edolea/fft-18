@@ -11,7 +11,7 @@
 void vector_print(const doubleVector &result);
 void matrix_print(const doubleMatrix &matrix);
 
-int size = 1024; // Maximum size of the vector for testing
+int size = 8192; // Maximum size of the vector for testing
 double frequency = 2.0;
 double amplitude = 1.0;
 
@@ -26,6 +26,9 @@ std::vector<size_t> initialize_vector(size_t max_size)
 }
 int main()
 {
+
+    // Test 1D FFT
+    /*
     std::vector<std::pair<int, double>> time_recursive_fft, time_iterative_fft;
     for (const std::vector<size_t> n_list = initialize_vector(size); size_t n : n_list)
     {
@@ -43,4 +46,30 @@ int main()
 
     TimingSaver::saveFFTTimings(time_recursive_fft, "recursive_fft_timings.txt");
     TimingSaver::saveFFTTimings(time_iterative_fft, "iterative_fft_timings.txt");
-}
+
+     */
+
+    // 2D FFT Test
+    std::vector<std::pair<int, double>> time_recursive_fft, time_iterative_fft;
+    RecursiveFourier<doubleMatrix> recursiveFft2D;
+    IterativeFourier<doubleMatrix> iterativeFft2D;
+    for (const std::vector<size_t> n_list = initialize_vector(size); size_t n : n_list) {
+
+        const double frequency = 2.0;
+        const double amplitude = 1.0;
+
+        // Generate the 2D test matrix
+        const auto input = RandomVectorGenerator::generate<doubleMatrix>(n, frequency, amplitude);
+        doubleMatrix recursive_output;
+        doubleMatrix iterative_output;
+        // Direct FFT
+        recursiveFft2D.compute(input, recursive_output);
+        iterativeFft2D.compute(input, iterative_output);
+        time_iterative_fft.emplace_back(n, iterativeFft2D.getTime().count());
+        time_recursive_fft.emplace_back(n, recursiveFft2D.getTime().count());
+
+    }
+    TimingSaver::saveFFTTimings(time_recursive_fft, "recursive_fft_timings.txt");
+    TimingSaver::saveFFTTimings(time_iterative_fft, "iterative_fft_timings.txt");
+
+    }
