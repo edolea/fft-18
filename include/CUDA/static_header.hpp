@@ -14,7 +14,7 @@
 #include <fstream>
 #include <cstdlib>
 
-#define THREAD_PER_BLOCK 64 // this could be changed depends on GPU
+#define THREAD_PER_BLOCK 256 // this could be changed depends on GPU
 using namespace std;
 
 /**

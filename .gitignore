@@ -1,6 +1,7 @@
 .vscode/
 build
-OUTPUT_RESULT/mpi
+.venv
+
 
 .idea
 .xml
