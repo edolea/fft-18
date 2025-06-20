@@ -83,7 +83,7 @@ public:
     }
 
     virtual void executionTime() const {
-        std::cout << "Abstract FFT time: " << this->time.count() << " seconds" << std::endl;
+        // std::cout << "Abstract FFT time: " << this->time.count() << " seconds" << std::endl;
     }
 
     const std::chrono::duration<double> &getTime() const {

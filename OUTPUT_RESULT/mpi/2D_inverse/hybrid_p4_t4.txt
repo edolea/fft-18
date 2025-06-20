@@ -1,6 +1,62 @@
 ===== HYBRID: 4 PROCESSES × 4 THREADS =====
 N  sequential  mpi  speedup
-512  0.0766101  0.024313  3.15099
-1024  0.383886  0.0988862  3.8821
-2048  1.80254  0.408703  4.41039
-4096  7.70975  2.03773  3.78349
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./mpi_main
+Node: francesco-virgulti-Predator-PHN16-72
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+4 total processes failed to start
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./mpi_main
+Node: francesco-virgulti-Predator-PHN16-72
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+4 total processes failed to start
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./mpi_main
+Node: francesco-virgulti-Predator-PHN16-72
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+4 total processes failed to start
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./mpi_main
+Node: francesco-virgulti-Predator-PHN16-72
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+4 total processes failed to start
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./mpi_main
+Node: francesco-virgulti-Predator-PHN16-72
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+4 total processes failed to start
+--------------------------------------------------------------------------
+mpiexec was unable to launch the specified application as it could not access
+or execute an executable:
+
+Executable: ./mpi_main
+Node: francesco-virgulti-Predator-PHN16-72
+
+while attempting to start process rank 0.
+--------------------------------------------------------------------------
+4 total processes failed to start

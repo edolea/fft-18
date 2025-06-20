@@ -14,5 +14,5 @@ make
 
 # Run the resulting executables
 #./main_gpu
-./main_cpu
+#./main_cpu
 
