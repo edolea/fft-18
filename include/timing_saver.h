@@ -20,6 +20,7 @@ public:
 
         create_directory_if_not_exists(outputDirectory);
         saveTimingsToFile(timings_fft, outputFilename, outputDirectory, description);
+        std::cout << "Timings saved to: " << outputDirectory << "/" << outputFilename << std::endl;
     }
 
     static void saveParallelFFTTimings(
@@ -30,6 +31,7 @@ public:
 
         create_directory_if_not_exists(outputDirectory);
         saveParallelTimingsToFile(timings_parallel_fft, outputFilename, outputDirectory, description);
+        std::cout << "Timings saved to: " << outputDirectory << "/" << outputFilename << std::endl;
     }
 
 private:
