@@ -9,7 +9,7 @@ directories = [
     os.path.join(script_dir, "..", "OUTPUT_RESULT", "mpi", "2D"),
     os.path.join(script_dir, "..", "OUTPUT_RESULT", "mpi", "2D_inverse"),
 ]
-plot_dir = os.path.join(script_dir, "..", "PLOT", "mpi2")
+plot_dir = os.path.join(script_dir, "..", "PLOT", "mpi")
 os.makedirs(plot_dir, exist_ok=True)
 
 # Function to read timings and calculate speedup from a file
