@@ -19,16 +19,6 @@ To build the project, use the provided `build.sh` script. This script will:
 ./build.sh
 ```
 
-> **Note:**  
-> If you see the error  
-> `bash: ./run.sh: Permission denied`  
-> it means the script is not marked as executable.  
-> To fix this, run:
->
-> ```sh
-> chmod +x run.sh
-> ```
-
 ---
 
 ## Run Instructions
@@ -49,6 +39,16 @@ After building, use the `run.sh` script to execute the available FFT options. Th
 ```sh
 ./run.sh
 ```
+
+> **Note:**  
+> If you see the error  
+> `bash: ./run.sh: Permission denied`  
+> it means the script is not marked as executable.  
+> To fix this, run:
+>
+> ```sh
+> chmod +x run.sh
+> ```
 
 ---
 
