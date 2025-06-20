@@ -128,7 +128,7 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             // Handle stages where butterfly operations are within local blocks
             if (d <= local_n) {
                 // All butterfly operations are local - no communication needed
-                #pragma omp parallel for schedule(static, d/2)
+                #pragma omp parallel for schedule(static)
                 for (int k = 0; k < local_n; k += d) {
                     typename T::value_type w{1, 0};
                     for (int i = 0; i < d/2; i++) {
