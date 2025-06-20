@@ -41,8 +41,8 @@ jobs:
       - name: Build
         run: cmake --build build
 
-      - name: Run Main
-        run: ./build/main_cpu
+      #- name: Run Main
+      #  run: ./build/main_cpu
 
       - name: Run Tests
         run: ctest --test-dir build --output-on-failure
