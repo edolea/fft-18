@@ -1,4 +1,4 @@
-# FFT High Performance Computing Project
+# High-Performance Parallel FFT with CUDA and MPI
 
 This project provides a high-performance implementation of the Fast Fourier Transform (FFT) with support for CPU, GPU (CUDA), and MPI-based parallelism. It also includes an image-processing pipeline that applies FFT to images.
 
@@ -18,6 +18,16 @@ To build the project, use the provided `build.sh` script. This script will:
 ```sh
 ./build.sh
 ```
+
+> **Note:**  
+> If you see the error  
+> `bash: ./run.sh: Permission denied`  
+> it means the script is not marked as executable.  
+> To fix this, run:
+>
+> ```sh
+> chmod +x run.sh
+> ```
 
 ---
 
