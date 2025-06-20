@@ -81,7 +81,6 @@ class MpiIterativeFourier final : public BaseTransform<T> {
 
     // MPI 1D
     void compute_mpi_1d_(const T &input, T &output, const bool &isDirect) {
-        // Get input size and validate it's a power of 2
         int global_n;
         if (rank == 0)
             global_n = input.size();
@@ -93,9 +92,8 @@ class MpiIterativeFourier final : public BaseTransform<T> {
         const int local_n = global_n / size;
 
         // Ensure output is properly sized on rank 0
-        if (rank == 0) {
+        if (rank == 0)
             output.resize(global_n);
-        }
 
         // Local storage
         T local_output(local_n);
@@ -130,7 +128,7 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             // Handle stages where butterfly operations are within local blocks
             if (d <= local_n) {
                 // All butterfly operations are local - no communication needed
-                #pragma omp parallel for
+                #pragma omp parallel for schedule(static)
                 for (int k = 0; k < local_n; k += d) {
                     typename T::value_type w{1, 0};
                     for (int i = 0; i < d/2; i++) {
@@ -215,9 +213,9 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             T local_input(local_rows, typename T::value_type(cols));
             T local_output(local_rows, typename T::value_type(cols));
 
-            // Local receive buffers for all ranks
+            // Local buffers for all ranks
             typename T::value_type recBuff(local_rows * cols);
-            typename T::value_type sendBuff_notRoot(local_rows * cols);
+            // typename T::value_type sendBuff_notRoot(local_rows * cols);
             typename T::value_type sendBuff(rows * cols);
 
             // Step 0: Scatter rows to processes
@@ -243,9 +241,9 @@ class MpiIterativeFourier final : public BaseTransform<T> {
                     row.resize(cols);
             }
 
-            flattenBuffer(local_output, sendBuff_notRoot, local_rows, cols);
+            flattenBuffer(local_output, sendBuff, local_rows, cols);
             typename T::value_type recvbuf(rank == 0 ? rows * cols : 0);
-            MPI_Gather(sendBuff_notRoot.data(), local_rows * cols, MPI_DOUBLE_COMPLEX,
+            MPI_Gather(sendBuff.data(), local_rows * cols, MPI_DOUBLE_COMPLEX,
                       rank == 0 ? recvbuf.data() : nullptr, rank == 0 ? local_rows * cols : 0, MPI_DOUBLE_COMPLEX,
                       0, comm);
 
@@ -258,14 +256,13 @@ class MpiIterativeFourier final : public BaseTransform<T> {
             }
 
             // Step 2.5: scatter again
-            typename T::value_type sendbuf(rows * cols);
+            // typename T::value_type sendBuff(rows * cols);
             if (rank == 0)
-                flattenBuffer(row_fft, sendbuf, rows, cols);
-            MPI_Scatter(rank == 0 ? sendbuf.data() : nullptr, rank == 0 ? local_rows * cols : 0, MPI_DOUBLE_COMPLEX,
+                flattenBuffer(row_fft, sendBuff, rows, cols);
+            MPI_Scatter(rank == 0 ? sendBuff.data() : nullptr, rank == 0 ? local_rows * cols : 0, MPI_DOUBLE_COMPLEX,
             recBuff.data(), local_rows * cols, MPI_DOUBLE_COMPLEX, 0, comm);
 
             unflattenBuffer(recBuff, local_input, local_rows, cols);
-
 
             // Step 3: Apply FFT to each (now transposed) row == original columns
             #pragma omp parallel for schedule(static)
@@ -282,28 +279,25 @@ class MpiIterativeFourier final : public BaseTransform<T> {
                     row.resize(cols);
             }
 
-            flattenBuffer(local_output, sendBuff_notRoot, local_rows, cols);
-            MPI_Gather(sendBuff_notRoot.data(), local_rows * cols, MPI_DOUBLE_COMPLEX,
+            flattenBuffer(local_output, sendBuff, local_rows, cols);
+
+            // Step 5: Normalize for inverse FFT
+            if (!isDirect) {
+                #pragma omp parallel for schedule(static)
+                for (auto& val : sendBuff)
+                    val /= static_cast<typename T::value_type::value_type::value_type>(local_rows * cols);
+
+                // NB: normalizing on buffer is better bc all the vector inside contiguous heap memory block
+                //      with matrix each row would be on different heap --> worse threads performance
+            }
+
+            MPI_Gather(sendBuff.data(), local_rows * cols, MPI_DOUBLE_COMPLEX,
                       rank == 0 ? recvbuf.data() : nullptr, local_rows * cols, MPI_DOUBLE_COMPLEX,
                       0, comm);
 
             // Step 3.5b: reshape on root again
             if (rank == 0) {
                 // Reshape gathered data into output
-                #pragma omp parallel for schedule(static)
-                for (int i = 0; i < rows; i++)
-                    std::copy(recvbuf.begin() + i * cols,
-                             recvbuf.begin() + (i + 1) * cols,
-                             output[i].begin());
-
-                // Step 5: Normalize for inverse FFT
-                if (!isDirect)
-                    #pragma omp parallel for schedule(static)
-                    for (auto& val : recvbuf)
-                        val /= static_cast<typename T::value_type::value_type::value_type>(rows * cols);
-
-                // NB: normalizing on recvbuf is better bc all the vector inside contiguous heap memory block
-                //      with matrix each row would be on different heap --> worse threads performance
                 unflattenBuffer(recvbuf, output, rows, cols);
 
                 // Step 4: Transpose back on root

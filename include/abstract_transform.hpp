@@ -17,17 +17,9 @@ template <typename T = std::vector<std::complex<double>>>
 concept ComplexVector = std::is_same_v<T, std::vector<std::complex<float>>> ||
                         std::is_same_v<T, std::vector<std::complex<double>>>;
 
-template <typename T, size_t n>
-concept ComplexArray = std::is_same_v<T, std::array<std::complex<float>, n>> ||
-                       std::is_same_v<T, std::array<std::complex<double>, n>>;
-
 template <typename T>
 concept ComplexVectorMatrixPre = std::is_same_v<T, std::vector<std::vector<std::complex<float>>>> ||
                                  std::is_same_v<T, std::vector<std::vector<std::complex<double>>>>;
-
-template <typename T, size_t n>
-concept ComplexArrayMatrixPre = std::is_same_v<T, std::array<std::array<std::complex<float>, n>, n>> ||
-                                std::is_same_v<T, std::array<std::array<std::complex<double>, n>, n>>;
 
 template <typename T>
 concept ComplexVectorMatrix = ComplexVectorMatrixPre<T> && requires(const T &mat) {
@@ -38,15 +30,6 @@ concept ComplexVectorMatrix = ComplexVectorMatrixPre<T> && requires(const T &mat
     { isPowerOfTwo(mat.size()) } -> std::convertible_to<bool>;
     { isPowerOfTwo(mat[0].size()) } -> std::convertible_to<bool>;
     { mat.size() == mat[0].size() } -> std::convertible_to<bool>;
-};
-
-template <typename T, size_t n>
-concept ComplexArrayMatrix = ComplexArrayMatrixPre<T, n> && requires(const T &mat) {
-    { mat.size() } -> std::convertible_to<size_t>;
-    { mat[0].size() } -> std::convertible_to<size_t>;
-    requires !mat.empty() && !mat[0].empty();
-    { isPowerOfTwo(mat.size()) } -> std::convertible_to<bool>;
-    { isPowerOfTwo(mat[0].size()) } -> std::convertible_to<bool>;
 };
 
 using complexDouble = std::complex<double>;
@@ -63,9 +46,6 @@ using TimeDuration = std::chrono::duration<double>;
 template <typename T>
 concept ComplexContainer = ComplexVector<T> || ComplexVectorMatrix<T>;
 
-// TODO: to implement in abstract
-template <typename T, size_t n>
-concept ComplexArrayContainer = ComplexArray<T, n> || ComplexArrayMatrix<T, n>;
 
 template <ComplexContainer T>
 class BaseTransform {
@@ -103,8 +83,7 @@ public:
     }
 
     virtual void executionTime() const {
-       // std::cout << "Abstract FFT time: "
-         //         << this->time.count() << " seconds" << std::endl;
+        // std::cout << "Abstract FFT time: " << this->time.count() << " seconds" << std::endl;
     }
 
     const std::chrono::duration<double> &getTime() const {
@@ -113,14 +92,5 @@ public:
 
     virtual ~BaseTransform() = default;
 };
-
-/* PER EDO: template partial specialization
-
-    template<ComplexVector T>
-    class BaseTransform<T*>{
-
-    };
-
- */
 
 #endif // FFT_ABSTRACT_TRANSFORM_HPP

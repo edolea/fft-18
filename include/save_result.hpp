@@ -1,7 +1,3 @@
-//
-// Created by francesco-virgulti on 6/18/25.
-//
-
 #ifndef FFT_RESULT_SAVER_H
 #define FFT_RESULT_SAVER_H
 

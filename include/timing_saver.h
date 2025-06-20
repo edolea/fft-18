@@ -1,7 +1,3 @@
-//
-// Created by francesco-virgulti on 6/10/25.
-//
-
 #ifndef TIMING_SAVER_H
 #define TIMING_SAVER_H
 

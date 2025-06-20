@@ -4,7 +4,6 @@
 #include <vector>
 #include <complex>
 #include <random>
-#include <stdexcept>
 #include <cassert>
 #include "abstract_transform.hpp" // To ensure it aligns with the ComplexVector concept
 
@@ -20,7 +19,7 @@ class RandomVectorGenerator {
     }
 
 public:
-    // TODO: failed try to make random generator at compile time --> must use array to have it
+    // failed try to make random generator at compile time --> must use array to have it
     template<ComplexVector T>
     static constexpr T make_random_vector(uint32_t seed, size_t size) {
         assert(isPowerOfTwo(size));
@@ -40,16 +39,13 @@ public:
 
         // Random number generators for real and imaginary parts
         // std::random_device rd;
-        // std::mt19937 gen(rd());
+        // std::mt19937 gen(rd()); // NON fixed seed
         std::mt19937 gen(42);  // fixed seed for testing --> all same size inputs are equal
         std::uniform_real_distribution<> dis(-1.0, 1.0); // Range [-1.0, 1.0]
 
         T randomVector(size);
-        for (auto& elem : randomVector) {
+        for (auto& elem : randomVector)
              elem = std::complex<typename T::value_type::value_type>(dis(gen), dis(gen)); // T::value::value impones double
-            //using ValueType = typename T::value_type::value_type;
-            //elem = ValueType(dis(gen), dis(gen));
-        }
 
         return randomVector;
     }
@@ -80,52 +76,5 @@ public:
         return input;
     }
 };
-
-/*   THIS VERSION HAS FIXED SEED FOR REPRODUCIBILITY
-#ifndef FFT_RANDOM_VECTOR_GENERATOR_HPP
-#define FFT_RANDOM_VECTOR_GENERATOR_HPP
-
-#include <vector>
-#include <complex>
-#include <random>
-#include <cstddef> // for size_t
-#include <stdexcept>
-#include "abstract_transform.hpp" // To ensure it aligns with the ComplexVector concept
-
-class RandomVectorGenerator {
-private:
-    std::mt19937 generator; // Mersenne Twister random number generator
-    std::uniform_real_distribution<> distribution;
-
-public:
-    // Constructor with optional seed
-    explicit RandomVectorGenerator(unsigned int seed = std::random_device{}())
-        : generator(seed), distribution(-1.0, 1.0) {}
-
-    // Generate a random vector of complex numbers with a size that is a power of two
-    template <typename T>
-    T generate(size_t size) {
-        // Check if size is a power of two
-        if (!isPowerOfTwo(size)) {
-            throw std::invalid_argument("Size must be a power of 2.");
-        }
-
-        T randomVector(size);
-        for (auto& elem : randomVector) {
-            elem = std::complex<typename T::value_type::value_type>(
-                distribution(generator), distribution(generator));
-        }
-
-        return randomVector;
-    }
-
-    // Reset the generator with a new seed
-    void resetSeed(unsigned int seed) {
-        generator.seed(seed);
-    }
-};
-
-#endif // FFT_RANDOM_VECTOR_GENERATOR_HPP
- */
 
 #endif //FFT_VECTOR_GENERATOR_HPP
