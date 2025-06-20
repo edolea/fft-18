@@ -7,6 +7,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Cache apt package lists and downloaded .deb files
+      - name: Cache apt packages
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-cache
+          restore-keys: |
+            ${{ runner.os }}-apt-cache
+
       # Checkout the repository with submodules
       - name: Checkout repository
         uses: actions/checkout@v2
