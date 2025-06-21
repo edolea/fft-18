@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 # Set up paths
 script_dir = os.path.dirname(os.path.abspath(__file__))
 directories = [
-    os.path.join(script_dir, "..", "OUTPUT_RESULT", "mpi", "1D"),
-    os.path.join(script_dir, "..", "OUTPUT_RESULT", "mpi", "1D_inverse"),
-    os.path.join(script_dir, "..", "OUTPUT_RESULT", "mpi", "2D"),
-    os.path.join(script_dir, "..", "OUTPUT_RESULT", "mpi", "2D_inverse"),
+    os.path.join(script_dir, "..", "output_result", "mpi", "1D"),
+    os.path.join(script_dir, "..", "output_result", "mpi", "1D_inverse"),
+    os.path.join(script_dir, "..", "output_result", "mpi", "2D"),
+    os.path.join(script_dir, "..", "output_result", "mpi", "2D_inverse"),
 ]
-plot_dir = os.path.join(script_dir, "..", "PLOT", "mpi")
+plot_dir = os.path.join(script_dir, "..", "plot", "mpi")
 os.makedirs(plot_dir, exist_ok=True)
 
 # Function to read timings and calculate speedup from a file

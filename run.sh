@@ -38,8 +38,8 @@ if [ "$mode_choice" == "1" ]; then
                 exit 1
             fi
 
-            mkdir -p ../OUTPUT_RESULT/mpi/1D
-            mkdir -p ../OUTPUT_RESULT/mpi/2D
+            mkdir -p ../output_result/mpi/1D
+            mkdir -p ../output_result/mpi/2D
 
             echo
             echo "Starting MPI ${mpi_dim}D benchmark..."
@@ -49,7 +49,7 @@ if [ "$mode_choice" == "1" ]; then
                 export OMP_NUM_THREADS=$THREADS
 
                 if [ "$mpi_dim" == "1" ]; then
-                    OUTPUT_FILE="../OUTPUT_RESULT/mpi/1D/hybrid_p${PROCS}_t${THREADS}.txt"
+                    OUTPUT_FILE="../output_result/mpi/1D/hybrid_p${PROCS}_t${THREADS}.txt"
                     echo "===== 1D HYBRID: $PROCS PROCESSES × $THREADS THREADS ====="
                     echo "===== 1D HYBRID: $PROCS PROCESSES × $THREADS THREADS =====" > "$OUTPUT_FILE"
                     echo "N  sequential  mpi  speedup" >> "$OUTPUT_FILE"
@@ -59,7 +59,7 @@ if [ "$mode_choice" == "1" ]; then
                         mpiexec -n $PROCS ./mpi_main 1 $N >> "$OUTPUT_FILE" 2>&1
                     done
                 elif [ "$mpi_dim" == "2" ]; then
-                    OUTPUT_FILE="../OUTPUT_RESULT/mpi/2D/hybrid_p${PROCS}_t${THREADS}.txt"
+                    OUTPUT_FILE="../output_result/mpi/2D/hybrid_p${PROCS}_t${THREADS}.txt"
                     echo "===== 2D HYBRID: $PROCS PROCESSES × $THREADS THREADS ====="
                     echo "===== 2D HYBRID: $PROCS PROCESSES × $THREADS THREADS =====" > "$OUTPUT_FILE"
                     echo "N  sequential  mpi  speedup" >> "$OUTPUT_FILE"

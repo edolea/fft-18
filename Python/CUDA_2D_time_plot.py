@@ -8,9 +8,9 @@ from collections import defaultdict
 # Path Setup
 # ---------------------
 script_dir = os.path.dirname(os.path.abspath(__file__))
-seq_input_dir = os.path.join(script_dir, "..", "OUTPUT_RESULT/sequential/2D")
-cuda_input_dir = os.path.join(script_dir, "..", "OUTPUT_RESULT/CUDA/2D")
-plot_dir = os.path.join(script_dir, "..", "PLOT")
+seq_input_dir = os.path.join(script_dir, "..", "output_result/sequential/2D")
+cuda_input_dir = os.path.join(script_dir, "..", "output_result/CUDA/2D")
+plot_dir = os.path.join(script_dir, "..", "plot")
 os.makedirs(plot_dir, exist_ok=True)
 
 # ---------------------

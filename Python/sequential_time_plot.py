@@ -4,8 +4,8 @@ import numpy as np
 
 # Set up paths
 script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir = os.path.join(script_dir, "..", "OUTPUT_RESULT/sequential/1D")
-plot_dir = os.path.join(script_dir, "..", "PLOT")
+input_dir = os.path.join(script_dir, "..", "output_result/sequential/1D")
+plot_dir = os.path.join(script_dir, "..", "plot")
 os.makedirs(plot_dir, exist_ok=True)
 
 # Read (N, time) from a file
