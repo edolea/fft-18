@@ -58,7 +58,7 @@ if [ "$mode_choice" == "1" ]; then
                         echo "--> Running $PROCS MPI processes with $THREADS threads (N=$N)"
                         mpiexec -n $PROCS ./mpi_main 1 $N >> "$OUTPUT_FILE" 2>&1
                     done
-                elif [ "$mpi_dim" == "2" ]; then
+                else
                     OUTPUT_FILE="../output_result/mpi/2D/hybrid_p${PROCS}_t${THREADS}.txt"
                     echo "===== 2D HYBRID: $PROCS PROCESSES × $THREADS THREADS ====="
                     echo "===== 2D HYBRID: $PROCS PROCESSES × $THREADS THREADS =====" > "$OUTPUT_FILE"
@@ -82,15 +82,38 @@ if [ "$mode_choice" == "1" ]; then
 
 elif [ "$mode_choice" == "2" ]; then
     echo "Running FFT on an image..."
-    read -p "Enter the path to the image (e.g., ./image_compression/images/image_6.png): " image_path
+    read -p "Enter the path to the image (e.g., image_compression/images/image_6.png): " image_path
 
     if [ ! -f "$image_path" ]; then
         echo "Error: File '$image_path' does not exist."
         exit 1
     fi
 
-    ./build/image_compression_exec "$image_path"
-else
-    echo "Invalid option. Exiting."
-    exit 1
-fi
+    cd build || { echo "Build directory not found!"; exit 1; }
+    ./image_compression_exec "../$image_path"
+
+    echo
+    echo "===== Running Python analysis (full_analysis.py) ====="
+
+        PYTHON_DIR="../Python"
+        VENV_PATH="../.venv"
+        PYTHON_BIN="$VENV_PATH/bin/python"
+        PIP_BIN="$VENV_PATH/bin/pip"
+
+        if [ ! -d "$VENV_PATH" ]; then
+            echo "Creating Python virtual environment..."
+            python3 -m venv "$VENV_PATH"
+        fi
+
+        echo "Activating virtual environment and installing dependencies..."
+        source "$VENV_PATH/bin/activate"
+
+        $PIP_BIN install --break-system-packages --quiet --upgrade pip
+        $PIP_BIN install --break-system-packages --quiet matplotlib numpy pandas
+
+        echo "Running full_analysis.py"
+        $PYTHON_BIN "$PYTHON_DIR/full_analysis.py"
+
+        deactivate
+        echo "Python analysis completed."
+        fi
