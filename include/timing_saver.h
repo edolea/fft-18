@@ -15,7 +15,7 @@ public:
     static void saveFFTTimings(
         const std::vector<std::pair<int, double>>& timings_fft,
         const std::string& outputFilename,
-        const std::string& outputDirectory = "../OUTPUT_RESULT", // Default directory for static methods
+        const std::string& outputDirectory = "../output_result", // Default directory for static methods
         const std::string& description = "Fast Fourier Transform (N, Time)") {
 
         create_directory_if_not_exists(outputDirectory);
@@ -26,7 +26,7 @@ public:
     static void saveParallelFFTTimings(
         const std::vector<std::tuple<int, double, int>>& timings_parallel_fft,
         const std::string& outputFilename,
-        const std::string& outputDirectory = "../OUTPUT_RESULT/CUDA", // Default directory for static methods
+        const std::string& outputDirectory = "../output_result/CUDA", // Default directory for static methods
         const std::string& description = "Fast Fourier Transform (N, Time, Threads)") {
 
         create_directory_if_not_exists(outputDirectory);
