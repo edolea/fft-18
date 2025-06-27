@@ -57,15 +57,32 @@ bool compareResults(const T& parallel, const T& sequential, double tolerance = 1
 int main(int argc, char** argv) {
     // Initialize MPI
     int provided;
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
+
+    int err = MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
+    if (err != MPI_SUCCESS) {
+        std::cerr << "MPI_Init_thread failed with error code " << err << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, err);
+        return 1;
+    }
 
     if (provided != MPI_THREAD_FUNNELED) {
         std::cerr << "MPI_THREAD_FUNNELED not implemented" << std::endl;
+        MPI_Finalize();
         return 1;
     }
+
     int rank, world_size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    err = MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (err != MPI_SUCCESS) {
+        std::cerr << "MPI_Comm_rank failed with error code " << err << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, err);
+    }
+
+    err = MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    if (err != MPI_SUCCESS) {
+        std::cerr << "MPI_Comm_size failed with error code " << err << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, err);
+    }
 
     // Parse command line arguments
     if (argc < 3) {
@@ -84,7 +101,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    // number of processors multiple of 2
     if (n % world_size != 0) {
         if (rank == 0) std::cerr << "Error: Size must be divisible by number of processes" << std::endl;
         MPI_Finalize();
@@ -95,38 +111,30 @@ int main(int argc, char** argv) {
     if (dimension == 1) {
         doubleVector input, parallel_output, sequential_output;
 
-        // Only rank 0 initializes data
         if (rank == 0) {
             generateTestData(input, n);
-
             parallel_output.resize(n);
             sequential_output.resize(n);
         }
 
-        // Create parallel FFT instance
         MpiIterativeFourier<doubleVector> parallelFFT(MPI_COMM_WORLD);
 
-        // Run parallel FFT
         parallelFFT.compute(input, parallel_output, true);
 
-        // On rank 0, also run sequential version and compare
         if (rank == 0) {
             IterativeFourier<doubleVector> sequentialFFT;
             sequentialFFT.compute(input, sequential_output, true);
 
-            //assert(compareResults(parallel_output, sequential_output));
             std::cout << n << "  " << sequentialFFT.getTime().count() << "  " << parallelFFT.getTime().count()
-                        << "  " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << std::endl;
+                      << "  " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << std::endl;
         }
     }
     // 2D FFT
     else if (dimension == 2) {
         doubleMatrix input, parallel_output, sequential_output;
 
-        // Only rank 0 initializes data
         if (rank == 0) {
             generateTestData(input, n);
-            // auto input = RandomVectorGenerator::generate<doubleMatrix>(n, 2.0, 1.0);
             parallel_output.resize(n, doubleVector(n));
             sequential_output.resize(n, doubleVector(n));
         }
@@ -134,17 +142,14 @@ int main(int argc, char** argv) {
         MpiIterativeFourier<doubleMatrix> parallelFFT(MPI_COMM_WORLD);
         parallelFFT.compute(input, parallel_output, true);
 
-        // On rank 0, also run sequential version and compare
         if (rank == 0) {
             IterativeFourier<doubleMatrix> sequentialFFT;
             sequentialFFT.compute(input, sequential_output, true);
 
-            //assert(compareResults(parallel_output, sequential_output));
             std::cout << n << "  " << sequentialFFT.getTime().count() << "  " << parallelFFT.getTime().count()
-                        << "  " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << std::endl;
+                      << "  " << sequentialFFT.getTime().count() / parallelFFT.getTime().count() << std::endl;
         }
-    }
-    else {
+    } else {
         if (rank == 0) std::cerr << "Error: Dimension must be 1 or 2" << std::endl;
     }
 
