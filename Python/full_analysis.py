@@ -6,8 +6,8 @@ import os
 
 
 # --- Output directory ---
-output_dir = "../OUTPUT_RESULT/Plot_result"
-csv_dir = "../OUTPUT_RESULT/csv_output"
+output_dir = "../output_result/Plot_result"
+csv_dir = "../output_result/csv_output"
 os.makedirs(output_dir, exist_ok=True)
 
 # === SVD ===
